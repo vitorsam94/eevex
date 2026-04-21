@@ -12,18 +12,18 @@
     "@eevex/db": "workspace:*",
     "@eevex/types": "workspace:*",
     "@eevex/ui": "workspace:*",
-    "next": "14.2.18",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
     "jsqr": "^1.4.0",
     "lucide-react": "^0.462.0",
-    "qrcode": "^1.5.4"
+    "next": "14.2.35",
+    "qrcode": "^1.5.4",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
+    "@types/qrcode": "^1.5.5",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
-    "@types/qrcode": "^1.5.5",
     "autoprefixer": "^10.4.20",
     "postcss": "^8.4.49",
     "tailwindcss": "^3.4.0",
