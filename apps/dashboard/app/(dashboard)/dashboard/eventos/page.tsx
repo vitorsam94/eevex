@@ -1,8 +1,10 @@
+export const dynamic = 'force-dynamic'
+
 import { getServerSession } from 'next-auth'
 import { redirect } from 'next/navigation'
 import { authOptions } from '@/lib/auth'
 import Link from 'next/link'
-import { db } from '@eevex/db'
+import { db } from '@/lib/db'
 import { Button, Badge, Card } from '@eevex/ui'
 import { Plus, Calendar, Users } from 'lucide-react'
 

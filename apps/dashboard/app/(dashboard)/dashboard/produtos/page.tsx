@@ -1,7 +1,9 @@
+export const dynamic = 'force-dynamic'
+
 import { getServerSession } from 'next-auth'
 import { redirect } from 'next/navigation'
 import { authOptions } from '@/lib/auth'
-import { db } from '@eevex/db'
+import { db } from '@/lib/db'
 import { Badge, Card, Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@eevex/ui'
 
 export default async function ProdutosPage() {

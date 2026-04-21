@@ -1,7 +1,9 @@
+export const dynamic = 'force-dynamic'
+
 import { getServerSession } from 'next-auth'
 import { redirect } from 'next/navigation'
 import { authOptions } from '@/lib/auth'
-import { db } from '@eevex/db'
+import { db } from '@/lib/db'
 import { KpiCard, Card, Badge } from '@eevex/ui'
 import Link from 'next/link'
 import { Button } from '@eevex/ui'
