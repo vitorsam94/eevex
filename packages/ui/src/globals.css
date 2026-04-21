@@ -1,0 +1,84 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500;600&family=Instrument+Serif:ital@0;1&display=swap');
+
+:root {
+  --bg: #0A0A0F;
+  --bg-elev: #11111A;
+  --bg-elev-2: #16161F;
+  --bg-soft: #1C1C26;
+  --border: rgba(255, 255, 255, 0.07);
+  --border-2: rgba(255, 255, 255, 0.12);
+  --fg: #F0F0F5;
+  --fg-muted: #9A9AA8;
+  --fg-dim: #5A5A68;
+  --primary: #7C5CFF;
+  --primary-soft: rgba(124, 92, 255, 0.12);
+  --accent: #00E5B8;
+  --warn: #FFB547;
+  --danger: #FF5470;
+
+  --font-heading: 'Space Grotesk', sans-serif;
+  --font-body: 'Inter', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  --font-serif: 'Instrument Serif', serif;
+
+  --r-sm: 6px;
+  --r-md: 10px;
+  --r-lg: 16px;
+  --r-xl: 24px;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  line-height: 1.5;
+}
+
+@layer utilities {
+  .font-heading {
+    font-family: var(--font-heading);
+  }
+  .font-mono-eevex {
+    font-family: var(--font-mono);
+  }
+  .font-serif-eevex {
+    font-family: var(--font-serif);
+  }
+
+  .text-fg { color: var(--fg); }
+  .text-fg-muted { color: var(--fg-muted); }
+  .text-fg-dim { color: var(--fg-dim); }
+  .text-primary { color: var(--primary); }
+  .text-accent { color: var(--accent); }
+  .text-warn { color: var(--warn); }
+  .text-danger { color: var(--danger); }
+
+  .bg-surface { background: var(--bg); }
+  .bg-elev { background: var(--bg-elev); }
+  .bg-elev-2 { background: var(--bg-elev-2); }
+  .bg-soft { background: var(--bg-soft); }
+
+  .border-subtle { border-color: var(--border); }
+  .border-strong { border-color: var(--border-2); }
+
+  .label-mono {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--fg-dim);
+  }
+}

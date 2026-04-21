@@ -1,0 +1,621 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../../../node_modules/.prisma/client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─────────────────────────────────────────
+// ENUMS
+// ─────────────────────────────────────────
+
+enum OrganizerPlan {
+  free
+  starter
+  pro
+  enterprise
+}
+
+enum EventType {
+  in_person
+  online
+  hybrid
+}
+
+enum EventStatus {
+  draft
+  published
+  paused
+  ended
+  archived
+}
+
+enum ActivityType {
+  workshop
+  talk
+  seminar
+  panel
+  other
+}
+
+enum TicketTypeKind {
+  main
+  complementary
+  courtesy
+}
+
+enum BatchStatus {
+  waiting
+  active
+  closed
+}
+
+enum OrderStatus {
+  pending_payment
+  paid
+  cancelled
+  refunded
+  partially_refunded
+}
+
+enum OrderTicketStatus {
+  reserved
+  issued
+  checked_in
+  cancelled
+  refunded
+}
+
+enum OrderProductStatus {
+  pending_pickup
+  picked_up
+  not_collected
+}
+
+enum PaymentGateway {
+  stripe
+  pagseguro
+}
+
+enum PaymentMethod {
+  credit_card
+  pix
+  boleto
+  apple_pay
+  google_pay
+}
+
+enum PaymentStatus {
+  pending
+  paid
+  failed
+  refunded
+  partially_refunded
+}
+
+enum WebhookStatus {
+  pending
+  processed
+  failed
+}
+
+enum CouponType {
+  percentage
+  fixed
+  free
+}
+
+enum OperatorRole {
+  admin
+  checkin_staff
+  kiosk
+}
+
+enum StandOperatorRole {
+  stand_staff
+  stand_admin
+}
+
+enum CheckinSource {
+  receptionist
+  kiosk
+}
+
+enum CheckinAction {
+  checkin
+  second_attempt
+  reprint
+  manual_search
+}
+
+enum CheckinResult {
+  success
+  already_used
+  invalid
+  cancelled
+  type_restricted
+}
+
+enum PickupLogStatus {
+  pending
+  accepted
+  expired
+}
+
+enum PickupMode {
+  qr_required
+  staff_confirm
+}
+
+enum ParticipantAccountStatus {
+  guest
+  registered
+}
+
+enum AuditActorType {
+  organizer
+  participant
+  operator
+  system
+}
+
+// ─────────────────────────────────────────
+// ORGANIZER (tenant)
+// ─────────────────────────────────────────
+
+model Organizer {
+  id                     String        @id @default(uuid())
+  name                   String
+  slug                   String        @unique
+  email                  String        @unique
+  passwordHash           String?
+  plan                   OrganizerPlan @default(free)
+  stripeAccountId        String?
+  pagSeguroCredentials   Json?
+  createdAt              DateTime      @default(now())
+  updatedAt              DateTime      @updatedAt
+
+  events                 Event[]
+  operators              Operator[]
+  standOperators         StandOperator[]
+  kiosks                 Kiosk[]
+  productVariationTemplates ProductVariationTemplate[]
+}
+
+// ─────────────────────────────────────────
+// EVENT
+// ─────────────────────────────────────────
+
+model Event {
+  id           String      @id @default(uuid())
+  organizerId  String
+  name         String
+  slug         String      @unique
+  description  String?
+  type         EventType   @default(in_person)
+  status       EventStatus @default(draft)
+  location     Json?
+  startsAt     DateTime
+  endsAt       DateTime
+  timezone     String      @default("America/Sao_Paulo")
+  coverImage   String?
+  branding     Json?
+  capacity     Int?
+  customFields Json        @default("[]")
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  organizer     Organizer       @relation(fields: [organizerId], references: [id])
+  activities    Activity[]
+  ticketTypes   TicketType[]
+  purchaseLinks PurchaseLink[]
+  products      Product[]
+  orders        Order[]
+  operators     Operator[]
+  standOperators StandOperator[]
+  kiosks        Kiosk[]
+  badgeTemplates BadgeTemplate[]
+  coupons       Coupon[]
+}
+
+model Activity {
+  id          String       @id @default(uuid())
+  eventId     String
+  name        String
+  description String?
+  startsAt    DateTime
+  endsAt      DateTime
+  location    String?
+  capacity    Int?
+  type        ActivityType @default(other)
+
+  event       Event        @relation(fields: [eventId], references: [id])
+  ticketTypes TicketType[]
+}
+
+// ─────────────────────────────────────────
+// TICKETS & BATCHES
+// ─────────────────────────────────────────
+
+model TicketType {
+  id                    String         @id @default(uuid())
+  eventId               String
+  activityId            String?
+  name                  String
+  description           String?
+  type                  TicketTypeKind @default(main)
+  totalQty              Int?
+  availableQty          Int            @default(0)
+  sortOrder             Int            @default(0)
+  benefits              Json           @default("[]")
+  maxPerBuyer           Int?
+  isVisible             Boolean        @default(true)
+  requiresTicketTypeId  String?
+  createdAt             DateTime       @default(now())
+  updatedAt             DateTime       @updatedAt
+
+  event                Event          @relation(fields: [eventId], references: [id])
+  activity             Activity?      @relation(fields: [activityId], references: [id])
+  requiresTicketType   TicketType?    @relation("ComplementaryTicket", fields: [requiresTicketTypeId], references: [id])
+  complementaryTickets TicketType[]   @relation("ComplementaryTicket")
+  batches              Batch[]
+  purchaseLinks        PurchaseLink[]
+  orderTickets         OrderTicket[]
+  kioskAllowedIn       Kiosk[]        @relation("KioskAllowedTickets")
+  badgeTemplates       BadgeTemplate[]
+}
+
+model Batch {
+  id           String      @id @default(uuid())
+  ticketTypeId String
+  name         String
+  price        Int
+  qty          Int?
+  soldQty      Int         @default(0)
+  opensAt      DateTime?
+  closesAt     DateTime?
+  sortOrder    Int         @default(0)
+  status       BatchStatus @default(waiting)
+  isActive     Boolean     @default(true)
+
+  ticketType   TicketType   @relation(fields: [ticketTypeId], references: [id])
+  orderTickets OrderTicket[]
+}
+
+// ─────────────────────────────────────────
+// PURCHASE LINKS / CAMPAIGNS
+// ─────────────────────────────────────────
+
+model PurchaseLink {
+  id                 String      @id @default(uuid())
+  eventId            String
+  ticketTypeId       String?
+  slug               String      @unique
+  name               String
+  landingPageConfig  Json?
+  isFocused          Boolean     @default(false)
+  utmSource          String?
+  utmMedium          String?
+  utmCampaign        String?
+  ref                String?
+  isActive           Boolean     @default(true)
+  createdAt          DateTime    @default(now())
+
+  event              Event        @relation(fields: [eventId], references: [id])
+  ticketType         TicketType?  @relation(fields: [ticketTypeId], references: [id])
+  orders             Order[]
+}
+
+// ─────────────────────────────────────────
+// PRODUCTS (additional items)
+// ─────────────────────────────────────────
+
+model Product {
+  id                     String      @id @default(uuid())
+  eventId                String
+  name                   String
+  description            String?
+  imageUrl               String?
+  eligibleTicketTypeIds  String[]    @default([])
+  attributes             Json        @default("[]")
+  salesOpensAt           DateTime?
+  salesClosesAt          DateTime?
+  salesQtyLimit          Int?
+  totalSoldQty           Int         @default(0)
+  pickupMode             PickupMode  @default(qr_required)
+  isActive               Boolean     @default(true)
+
+  event                  Event        @relation(fields: [eventId], references: [id])
+  skus                   ProductSku[]
+}
+
+model ProductSku {
+  id          String   @id @default(uuid())
+  productId   String
+  attributes  Json     @default("{}")
+  price       Int
+  stockQty    Int      @default(0)
+  reservedQty Int      @default(0)
+  isActive    Boolean  @default(true)
+
+  product      Product        @relation(fields: [productId], references: [id])
+  orderProducts OrderProduct[]
+}
+
+model ProductVariationTemplate {
+  id           String     @id @default(uuid())
+  name         String
+  attributes   Json
+  isSystem     Boolean    @default(false)
+  organizerId  String?
+
+  organizer    Organizer? @relation(fields: [organizerId], references: [id])
+}
+
+// ─────────────────────────────────────────
+// PARTICIPANT
+// ─────────────────────────────────────────
+
+model Participant {
+  id                   String                   @id @default(uuid())
+  email                String                   @unique
+  name                 String
+  document             String?
+  phone                String?
+  passwordHash         String?
+  accountStatus        ParticipantAccountStatus @default(guest)
+  extraFields          Json                     @default("{}")
+  magicLinkToken       String?                  @unique
+  magicLinkExpiresAt   DateTime?
+  createdAt            DateTime                 @default(now())
+  updatedAt            DateTime                 @updatedAt
+
+  orders               Order[]
+  orderTickets         OrderTicket[]
+}
+
+// ─────────────────────────────────────────
+// ORDER
+// ─────────────────────────────────────────
+
+model Order {
+  id              String      @id @default(uuid())
+  eventId         String
+  participantId   String
+  purchaseLinkId  String?
+  utmParams       Json?
+  status          OrderStatus @default(pending_payment)
+  totalAmount     Int
+  feeAmount       Int         @default(0)
+  netAmount       Int
+  currency        String      @default("BRL")
+  expiresAt       DateTime?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  event           Event         @relation(fields: [eventId], references: [id])
+  participant     Participant   @relation(fields: [participantId], references: [id])
+  purchaseLink    PurchaseLink? @relation(fields: [purchaseLinkId], references: [id])
+  orderTickets    OrderTicket[]
+  orderProducts   OrderProduct[]
+  payments        Payment[]
+}
+
+model OrderTicket {
+  id            String            @id @default(uuid())
+  orderId       String
+  ticketTypeId  String
+  batchId       String
+  participantId String
+  status        OrderTicketStatus @default(reserved)
+  publicToken   String            @unique
+  hmacSig       String
+  issuedAt      DateTime?
+  checkedInAt   DateTime?
+  checkedInBy   String?
+
+  order         Order       @relation(fields: [orderId], references: [id])
+  ticketType    TicketType  @relation(fields: [ticketTypeId], references: [id])
+  batch         Batch       @relation(fields: [batchId], references: [id])
+  participant   Participant @relation(fields: [participantId], references: [id])
+  checkinLogs   CheckinLog[]
+}
+
+model OrderProduct {
+  id             String             @id @default(uuid())
+  orderId        String
+  productSkuId   String
+  qty            Int
+  unitPrice      Int
+  status         OrderProductStatus @default(pending_pickup)
+  pickedUpAt     DateTime?
+  pickedUpBy     String?
+
+  order          Order          @relation(fields: [orderId], references: [id])
+  productSku     ProductSku     @relation(fields: [productSkuId], references: [id])
+  pickupLogs     ProductPickupLog[]
+}
+
+// ─────────────────────────────────────────
+// PAYMENT
+// ─────────────────────────────────────────
+
+model Payment {
+  id               String        @id @default(uuid())
+  orderId          String
+  gateway          PaymentGateway
+  method           PaymentMethod
+  gatewayPaymentId String?
+  status           PaymentStatus @default(pending)
+  amount           Int
+  paidAt           DateTime?
+  refundedAt       DateTime?
+  metadata         Json?
+
+  order            Order         @relation(fields: [orderId], references: [id])
+}
+
+model WebhookEvent {
+  id              String        @id @default(uuid())
+  gateway         PaymentGateway
+  externalEventId String        @unique
+  type            String
+  payload         Json
+  processedAt     DateTime?
+  status          WebhookStatus @default(pending)
+  createdAt       DateTime      @default(now())
+}
+
+// ─────────────────────────────────────────
+// COUPON
+// ─────────────────────────────────────────
+
+model Coupon {
+  id             String     @id @default(uuid())
+  eventId        String
+  code           String
+  type           CouponType
+  value          Int
+  maxUses        Int?
+  usedCount      Int        @default(0)
+  ticketTypeIds  String[]   @default([])
+  validFrom      DateTime?
+  validUntil     DateTime?
+  isActive       Boolean    @default(true)
+
+  event          Event      @relation(fields: [eventId], references: [id])
+
+  @@unique([eventId, code])
+}
+
+// ─────────────────────────────────────────
+// OPERATORS & CHECK-IN
+// ─────────────────────────────────────────
+
+model Operator {
+  id               String       @id @default(uuid())
+  organizerId      String
+  eventId          String?
+  email            String
+  name             String
+  role             OperatorRole @default(checkin_staff)
+  eventPermissions String[]     @default([])
+  inviteToken      String?      @unique
+  createdAt        DateTime     @default(now())
+
+  organizer        Organizer    @relation(fields: [organizerId], references: [id])
+  event            Event?       @relation(fields: [eventId], references: [id])
+  checkinLogs      CheckinLog[]
+}
+
+model Kiosk {
+  id                    String   @id @default(uuid())
+  eventId               String
+  organizerId           String
+  name                  String
+  deviceId              String   @unique
+  apiToken              String   @unique
+  badgeTemplateId       String?
+  isActive              Boolean  @default(true)
+  lastSeenAt            DateTime?
+  createdAt             DateTime @default(now())
+
+  event                 Event           @relation(fields: [eventId], references: [id])
+  organizer             Organizer       @relation(fields: [organizerId], references: [id])
+  badgeTemplate         BadgeTemplate?  @relation(fields: [badgeTemplateId], references: [id])
+  allowedTicketTypes    TicketType[]    @relation("KioskAllowedTickets")
+  checkinLogs           CheckinLog[]
+}
+
+model CheckinLog {
+  id             String        @id @default(uuid())
+  orderTicketId  String
+  operatorId     String?
+  kioskId        String?
+  source         CheckinSource
+  action         CheckinAction
+  result         CheckinResult
+  deviceInfo     Json?
+  createdAt      DateTime      @default(now())
+
+  orderTicket    OrderTicket   @relation(fields: [orderTicketId], references: [id])
+  operator       Operator?     @relation(fields: [operatorId], references: [id])
+  kiosk          Kiosk?        @relation(fields: [kioskId], references: [id])
+}
+
+// ─────────────────────────────────────────
+// STAND & PICKUP
+// ─────────────────────────────────────────
+
+model StandOperator {
+  id                 String            @id @default(uuid())
+  organizerId        String
+  eventId            String
+  name               String
+  email              String
+  pinHash            String
+  allowedProductIds  String[]          @default([])
+  role               StandOperatorRole @default(stand_staff)
+  isActive           Boolean           @default(true)
+  createdAt          DateTime          @default(now())
+
+  organizer          Organizer         @relation(fields: [organizerId], references: [id])
+  event              Event             @relation(fields: [eventId], references: [id])
+  pickupLogs         ProductPickupLog[]
+}
+
+model ProductPickupLog {
+  id               String          @id @default(uuid())
+  orderProductId   String
+  standOperatorId  String
+  acceptanceToken  String          @unique
+  tokenExpiresAt   DateTime
+  status           PickupLogStatus @default(pending)
+  acceptedAt       DateTime?
+  participantIp    String?
+  participantUa    String?
+  createdAt        DateTime        @default(now())
+
+  orderProduct     OrderProduct    @relation(fields: [orderProductId], references: [id])
+  standOperator    StandOperator   @relation(fields: [standOperatorId], references: [id])
+}
+
+// ─────────────────────────────────────────
+// BADGE TEMPLATES
+// ─────────────────────────────────────────
+
+model BadgeTemplate {
+  id           String      @id @default(uuid())
+  eventId      String
+  ticketTypeId String?
+  name         String
+  layout       Json
+  paperSize    String      @default("80x40")
+  isDefault    Boolean     @default(false)
+
+  event        Event       @relation(fields: [eventId], references: [id])
+  ticketType   TicketType? @relation(fields: [ticketTypeId], references: [id])
+  kiosks       Kiosk[]
+}
+
+// ─────────────────────────────────────────
+// AUDIT LOG
+// ─────────────────────────────────────────
+
+model AuditLog {
+  id         String         @id @default(uuid())
+  actorId    String
+  actorType  AuditActorType
+  action     String
+  entityType String
+  entityId   String
+  metadata   Json?
+  ipAddress  String?
+  createdAt  DateTime       @default(now())
+
+  @@index([entityType, entityId])
+  @@index([actorId, actorType])
+}

@@ -1,0 +1,2685 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>eevex — Sistema de Marca</title>
+
+<template id="__bundler_thumbnail" data-bg-color="#0A0A0F">
+  <svg viewBox="0 0 1200 800" xmlns="http://www.w3.org/2000/svg">
+    <rect width="1200" height="800" fill="#0A0A0F"/>
+    <g transform="translate(600 400)">
+      <g transform="translate(-260 -80)">
+        <path d="M 0 40 A 20 20 0 0 1 20 20 L 180 20 A 20 20 0 0 1 200 40 L 200 120 A 20 20 0 0 1 180 140 L 20 140 A 20 20 0 0 1 0 120 Z
+                 M -1 68 A 12 12 0 0 0 -1 92
+                 M 201 68 A 12 12 0 0 1 201 92"
+              fill="#7C5CFF" fill-rule="evenodd"/>
+      </g>
+      <text x="-10" y="30" font-family="Inter, sans-serif" font-weight="500" font-size="130" fill="#F0F0F5" letter-spacing="-6">eevex</text>
+    </g>
+  </svg>
+</template>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500;600&family=Instrument+Serif:ital@0;1&family=General+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<script>
+const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "primaryColor": "#FF8A3D",
+  "accentColor": "#00E5B8",
+  "fontHeading": "Inter",
+  "fontBody": "Inter",
+  "density": "comfortable",
+  "logoVariant": "capsule"
+}/*EDITMODE-END*/;
+</script>
+
+<style>
+  :root {
+    --bg: #0A0A0F;
+    --bg-elev: #11111A;
+    --bg-elev-2: #16161F;
+    --bg-soft: #1C1C26;
+    --border: rgba(255,255,255,0.07);
+    --border-2: rgba(255,255,255,0.12);
+    --fg: #F0F0F5;
+    --fg-muted: #9A9AA8;
+    --fg-dim: #5A5A68;
+    --primary: #7C5CFF;
+    --primary-soft: rgba(124, 92, 255, 0.12);
+    --accent: #00E5B8;
+    --warn: #FFB547;
+    --danger: #FF5470;
+
+    --font-heading: 'Space Grotesk', sans-serif;
+    --font-body: 'Inter', sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+    --font-serif: 'Instrument Serif', serif;
+
+    --unit: 8px;
+    --r-sm: 6px;
+    --r-md: 10px;
+    --r-lg: 16px;
+    --r-xl: 24px;
+
+    --section-pad: 96px;
+  }
+
+  [data-density="compact"] {
+    --section-pad: 56px;
+    --unit: 6px;
+  }
+  [data-density="spacious"] {
+    --section-pad: 140px;
+    --unit: 10px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: var(--bg); color: var(--fg); font-family: var(--font-body); -webkit-font-smoothing: antialiased; line-height: 1.5; }
+
+  body {
+    display: grid;
+    grid-template-columns: 240px 1fr;
+    min-height: 100vh;
+  }
+
+  /* ============ SIDEBAR ============ */
+  aside.sidenav {
+    position: sticky; top: 0;
+    height: 100vh;
+    padding: 28px 20px;
+    border-right: 1px solid var(--border);
+    background: var(--bg);
+    overflow-y: auto;
+    z-index: 10;
+  }
+  aside.sidenav .brand-mini {
+    display: flex; align-items: center; gap: 10px;
+    font-family: var(--font-heading); font-weight: 600; font-size: 18px;
+    margin-bottom: 32px;
+    letter-spacing: -0.02em;
+  }
+  .mark-glyph {
+    width: 28px; height: 28px; border-radius: 7px;
+    background: var(--primary);
+    display: grid; place-items: center;
+    position: relative;
+  }
+  .mark-glyph::before,
+  .mark-glyph::after {
+    content: '';
+    position: absolute;
+    background: var(--bg);
+  }
+  .mark-glyph::before {
+    width: 12px; height: 2px;
+    top: 10px; left: 8px;
+  }
+  .mark-glyph::after {
+    width: 8px; height: 2px;
+    top: 16px; left: 8px;
+  }
+
+  aside .nav-label {
+    font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em;
+    color: var(--fg-dim); margin: 24px 10px 8px;
+    font-weight: 500;
+  }
+  aside .nav-label:first-of-type { margin-top: 0; }
+  aside a.nav-link {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 10px;
+    font-size: 13.5px; color: var(--fg-muted); text-decoration: none;
+    border-radius: 7px;
+    transition: all 0.15s ease;
+  }
+  aside a.nav-link:hover { color: var(--fg); background: var(--bg-elev); }
+  aside a.nav-link.active { color: var(--fg); background: var(--bg-elev-2); }
+  aside a.nav-link .num {
+    font-family: var(--font-mono); font-size: 11px; color: var(--fg-dim);
+    width: 22px;
+  }
+
+  aside .side-foot {
+    position: sticky; bottom: 0; padding-top: 24px;
+    font-family: var(--font-mono); font-size: 11px; color: var(--fg-dim);
+    line-height: 1.8;
+  }
+
+  /* ============ MAIN ============ */
+  main { padding: 0 64px 120px; max-width: 1280px; }
+  [data-density="compact"] main { padding: 0 40px 80px; }
+
+  section.block {
+    padding: var(--section-pad) 0;
+    border-bottom: 1px solid var(--border);
+  }
+  section.block:last-of-type { border-bottom: none; }
+
+  .section-head {
+    display: grid; grid-template-columns: 120px 1fr; gap: 40px;
+    margin-bottom: 56px;
+    align-items: baseline;
+  }
+  .section-num {
+    font-family: var(--font-mono); font-size: 12px; color: var(--fg-dim);
+    letter-spacing: 0.04em;
+  }
+  .section-title h2 {
+    font-family: var(--font-heading); font-weight: 500;
+    font-size: 40px; letter-spacing: -0.025em; line-height: 1.05;
+    margin-bottom: 14px;
+  }
+  .section-title p {
+    color: var(--fg-muted); font-size: 16px; max-width: 580px;
+    line-height: 1.55;
+  }
+
+  /* ============ HERO ============ */
+  .hero {
+    padding: 96px 0 80px;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+  }
+  .hero-meta {
+    display: flex; gap: 40px;
+    font-family: var(--font-mono); font-size: 11px; color: var(--fg-dim);
+    margin-bottom: 56px;
+    text-transform: uppercase; letter-spacing: 0.06em;
+  }
+  .hero-meta strong { color: var(--fg-muted); font-weight: 500; margin-right: 8px; }
+
+  .hero h1 {
+    font-family: var(--font-heading); font-weight: 400;
+    font-size: clamp(64px, 8vw, 120px);
+    letter-spacing: -0.045em; line-height: 0.92;
+    margin-bottom: 32px;
+  }
+  .hero h1 em {
+    font-family: var(--font-serif); font-style: italic; font-weight: 400;
+    color: var(--primary);
+  }
+  .hero .lede {
+    font-size: 20px; color: var(--fg-muted);
+    max-width: 640px; line-height: 1.45;
+  }
+  .hero .lede .accent { color: var(--fg); }
+
+  .hero-stamps {
+    margin-top: 64px;
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 0;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+  .stamp {
+    padding: 24px 20px;
+    border-right: 1px solid var(--border);
+  }
+  .stamp:last-child { border-right: none; }
+  .stamp .k {
+    font-family: var(--font-mono); font-size: 10px; text-transform: uppercase;
+    letter-spacing: 0.08em; color: var(--fg-dim); margin-bottom: 10px;
+  }
+  .stamp .v {
+    font-family: var(--font-heading); font-size: 18px; color: var(--fg);
+    letter-spacing: -0.015em;
+  }
+
+  /* ============ LOGO SHOWCASE ============ */
+  .logo-stage {
+    background: var(--bg-elev);
+    border: 1px solid var(--border);
+    border-radius: var(--r-lg);
+    padding: 96px 40px;
+    display: grid; place-items: center;
+    min-height: 360px;
+    position: relative;
+    overflow: hidden;
+  }
+  .logo-stage::before {
+    content: ''; position: absolute; inset: 0;
+    background-image:
+      linear-gradient(to right, rgba(255,255,255,0.025) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(255,255,255,0.025) 1px, transparent 1px);
+    background-size: 24px 24px;
+    pointer-events: none;
+  }
+  .logo-stage .stage-label {
+    position: absolute; top: 16px; left: 20px;
+    font-family: var(--font-mono); font-size: 10px; text-transform: uppercase;
+    letter-spacing: 0.08em; color: var(--fg-dim);
+  }
+  .logo-stage .stage-label.right { left: auto; right: 20px; }
+
+  /* ------- LOGO MARK A: CAPSULE ------- */
+  .mark-capsule {
+    width: 64px; height: 64px; border-radius: 16px;
+    background: var(--primary);
+    display: grid; place-items: center;
+    position: relative;
+    flex-shrink: 0;
+  }
+  .mark-capsule .c-line {
+    position: absolute; background: var(--bg);
+    border-radius: 2px;
+  }
+  .mark-capsule .l1 { width: 26px; height: 3px; top: 22px; left: 18px; }
+  .mark-capsule .l2 { width: 18px; height: 3px; top: 32px; left: 18px; }
+  .mark-capsule .l3 { width: 10px; height: 3px; top: 42px; left: 18px; }
+
+  .wordmark {
+    font-family: var(--font-heading);
+    font-weight: 500;
+    font-size: 72px;
+    letter-spacing: -0.04em;
+    color: var(--fg);
+    display: flex; align-items: center; gap: 20px;
+  }
+  .wordmark .dot-mark {
+    width: 14px; height: 14px; border-radius: 50%;
+    background: var(--primary);
+  }
+
+  .logo-lockup-primary {
+    display: flex; align-items: center; gap: 24px;
+  }
+  .logo-lockup-primary .word {
+    font-family: var(--font-heading);
+    font-weight: 500;
+    font-size: 80px;
+    letter-spacing: -0.045em;
+    color: var(--fg);
+  }
+
+  /* ------- LOGO MARK B: TICKET NOTCH ------- */
+  .mark-ticket {
+    width: 76px; height: 56px;
+    background: var(--primary);
+    border-radius: 10px;
+    position: relative;
+    display: grid; place-items: center;
+  }
+  .mark-ticket::before,
+  .mark-ticket::after {
+    content: ''; position: absolute;
+    width: 14px; height: 14px; border-radius: 50%;
+    background: var(--bg-elev);
+    top: 50%; transform: translateY(-50%);
+  }
+  .mark-ticket::before { left: -7px; }
+  .mark-ticket::after { right: -7px; }
+  .mark-ticket .barcode {
+    display: flex; gap: 2px; align-items: center;
+  }
+  .mark-ticket .barcode span {
+    display: block; background: var(--bg);
+    width: 2px; border-radius: 1px;
+  }
+  .mark-ticket .barcode span:nth-child(1) { height: 24px; }
+  .mark-ticket .barcode span:nth-child(2) { height: 16px; }
+  .mark-ticket .barcode span:nth-child(3) { height: 28px; }
+  .mark-ticket .barcode span:nth-child(4) { height: 12px; }
+  .mark-ticket .barcode span:nth-child(5) { height: 28px; width: 4px; }
+  .mark-ticket .barcode span:nth-child(6) { height: 20px; }
+  .mark-ticket .barcode span:nth-child(7) { height: 24px; }
+
+  /* ------- LOGO MARK C: MONOGRAM E ------- */
+  .mark-mono {
+    width: 72px; height: 72px;
+    border: 3px solid var(--primary);
+    border-radius: 50%;
+    position: relative;
+    display: grid; place-items: center;
+  }
+  .mark-mono::before {
+    content: '';
+    width: 28px; height: 3px;
+    background: var(--primary);
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+  }
+  .mark-mono::after {
+    content: '';
+    width: 18px; height: 18px;
+    border-top: 3px solid var(--primary);
+    border-left: 3px solid var(--primary);
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%) rotate(-45deg);
+    opacity: 0;
+  }
+
+  /* ============ LOGO VARIATIONS ============ */
+  .logo-variants {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;
+    margin-top: 16px;
+  }
+  .variant-card {
+    background: var(--bg-elev);
+    border: 1px solid var(--border);
+    border-radius: var(--r-md);
+    padding: 48px 24px 20px;
+    position: relative;
+    min-height: 220px;
+    display: flex; flex-direction: column;
+  }
+  .variant-card.light { background: #F0F0F5; }
+  .variant-card.light .v-meta .name { color: #1A1A22; }
+  .variant-card.light .v-meta .desc { color: #6A6A78; }
+  .variant-card.accent-bg { background: var(--primary); }
+  .variant-card.accent-bg .v-meta .name { color: var(--bg); }
+  .variant-card.accent-bg .v-meta .desc { color: rgba(10,10,15,0.7); }
+
+  .variant-slot {
+    flex: 1; display: grid; place-items: center;
+    margin-bottom: 24px;
+  }
+  .v-meta { border-top: 1px solid var(--border); padding-top: 14px; }
+  .variant-card.light .v-meta { border-top-color: rgba(0,0,0,0.1); }
+  .variant-card.accent-bg .v-meta { border-top-color: rgba(10,10,15,0.15); }
+  .v-meta .name {
+    font-family: var(--font-heading); font-size: 13px; font-weight: 500;
+    margin-bottom: 2px;
+  }
+  .v-meta .desc { font-size: 11px; color: var(--fg-dim); font-family: var(--font-mono); }
+
+  /* ============ LOGO SIZE ============ */
+  .logo-sizes {
+    display: flex; align-items: flex-end; gap: 48px;
+    padding: 48px 32px;
+    background: var(--bg-elev);
+    border: 1px solid var(--border);
+    border-radius: var(--r-md);
+    margin-top: 16px;
+    flex-wrap: wrap;
+  }
+  .size-item { text-align: left; }
+  .size-item .lab {
+    font-family: var(--font-mono); font-size: 10px; color: var(--fg-dim);
+    text-transform: uppercase; margin-top: 14px;
+    letter-spacing: 0.06em;
+  }
+
+  /* ============ COLORS ============ */
+  .palette-main {
+    display: grid; grid-template-columns: 1.6fr 1fr 1fr 1fr; gap: 2px;
+    border-radius: var(--r-md); overflow: hidden;
+    border: 1px solid var(--border);
+  }
+  .swatch {
+    padding: 28px 24px;
+    min-height: 260px;
+    display: flex; flex-direction: column; justify-content: space-between;
+    position: relative;
+  }
+  .swatch .s-top { display: flex; justify-content: space-between; align-items: start; gap: 12px; }
+  .swatch .s-name { font-family: var(--font-heading); font-size: 18px; font-weight: 500; letter-spacing: -0.015em; }
+  .swatch .s-tag {
+    font-family: var(--font-mono); font-size: 10px;
+    padding: 4px 8px; border-radius: 4px;
+    background: rgba(255,255,255,0.1); color: inherit;
+    text-transform: uppercase; letter-spacing: 0.06em;
+  }
+  .swatch .s-bot { font-family: var(--font-mono); font-size: 11px; line-height: 1.7; opacity: 0.8; }
+  .swatch.dark { background: #0A0A0F; color: #F0F0F5; }
+  .swatch.primary { background: #7C5CFF; color: #fff; }
+  .swatch.accent { background: #00E5B8; color: #0A0A0F; }
+  .swatch.light { background: #F0F0F5; color: #0A0A0F; }
+
+  .palette-scale {
+    display: grid; grid-template-columns: repeat(10, 1fr);
+    margin-top: 32px;
+    border-radius: var(--r-md); overflow: hidden;
+  }
+  .scale-item {
+    height: 80px; display: flex; align-items: flex-end;
+    padding: 8px; font-family: var(--font-mono); font-size: 10px;
+  }
+  .scale-label {
+    grid-column: 1 / -1;
+    font-family: var(--font-mono); font-size: 10px; color: var(--fg-dim);
+    text-transform: uppercase; letter-spacing: 0.08em;
+    padding: 16px 4px 6px;
+  }
+
+  .semantic-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;
+    margin-top: 32px;
+  }
+  .sem-card {
+    background: var(--bg-elev); border: 1px solid var(--border);
+    border-radius: var(--r-md); padding: 20px;
+  }
+  .sem-dot { width: 20px; height: 20px; border-radius: 5px; margin-bottom: 16px; }
+  .sem-card .sem-name { font-size: 13px; font-weight: 500; margin-bottom: 4px; }
+  .sem-card .sem-desc { font-size: 12px; color: var(--fg-muted); line-height: 1.4; }
+  .sem-card .sem-hex { font-family: var(--font-mono); font-size: 11px; color: var(--fg-dim); margin-top: 10px; }
+
+  /* ============ TYPOGRAPHY ============ */
+  .type-specimen {
+    background: var(--bg-elev);
+    border: 1px solid var(--border);
+    border-radius: var(--r-md);
+    padding: 48px;
+    margin-bottom: 16px;
+  }
+  .type-specimen .meta {
+    display: flex; justify-content: space-between;
+    font-family: var(--font-mono); font-size: 11px; color: var(--fg-dim);
+    text-transform: uppercase; letter-spacing: 0.06em;
+    margin-bottom: 24px;
+  }
+  .type-specimen .big {
+    font-family: var(--font-heading);
+    font-weight: 400;
+    font-size: 140px;
+    letter-spacing: -0.04em; line-height: 0.9;
+    color: var(--fg);
+  }
+  .type-specimen.body .big {
+    font-family: var(--font-body); font-weight: 400;
+    font-size: 120px;
+  }
+  .type-specimen.mono .big {
+    font-family: var(--font-mono); font-weight: 400;
+    font-size: 110px; letter-spacing: -0.02em;
+  }
+  .type-specimen .glyphs {
+    font-family: inherit;
+    font-size: 20px; color: var(--fg-muted); margin-top: 32px;
+    letter-spacing: 0.02em;
+  }
+
+  .type-scale {
+    background: var(--bg-elev); border: 1px solid var(--border);
+    border-radius: var(--r-md); overflow: hidden;
+  }
+  .type-row {
+    display: grid; grid-template-columns: 100px 1fr 100px 80px;
+    align-items: center;
+    padding: 18px 24px;
+    border-bottom: 1px solid var(--border);
+    gap: 24px;
+  }
+  .type-row:last-child { border-bottom: none; }
+  .type-row .tr-name {
+    font-family: var(--font-mono); font-size: 11px; color: var(--fg-dim);
+    text-transform: uppercase; letter-spacing: 0.06em;
+  }
+  .type-row .tr-sample {
+    color: var(--fg);
+    font-family: var(--font-heading);
+  }
+  .type-row .tr-spec {
+    font-family: var(--font-mono); font-size: 11px; color: var(--fg-muted);
+    text-align: right;
+  }
+
+  /* ============ ICONS ============ */
+  .icon-grid {
+    display: grid; grid-template-columns: repeat(6, 1fr); gap: 2px;
+    background: var(--border); border: 1px solid var(--border);
+    border-radius: var(--r-md); overflow: hidden;
+  }
+  .icon-cell {
+    background: var(--bg-elev); padding: 32px 20px 20px;
+    display: flex; flex-direction: column; align-items: center; gap: 16px;
+    min-height: 120px;
+  }
+  .icon-cell svg { color: var(--fg); flex-shrink: 0; }
+  .icon-cell .i-name {
+    font-family: var(--font-mono); font-size: 10px; color: var(--fg-dim);
+    text-transform: uppercase; letter-spacing: 0.04em;
+  }
+  .icon-cell.primary svg { color: var(--primary); }
+  .icon-cell.accent svg { color: var(--accent); }
+
+  .icon-specs {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;
+    margin-top: 16px;
+  }
+  .spec-card {
+    background: var(--bg-elev); border: 1px solid var(--border);
+    border-radius: var(--r-md); padding: 24px;
+  }
+  .spec-card h4 {
+    font-family: var(--font-mono); font-size: 10px; text-transform: uppercase;
+    letter-spacing: 0.08em; color: var(--fg-dim); margin-bottom: 12px;
+    font-weight: 500;
+  }
+  .spec-card .big-num {
+    font-family: var(--font-heading); font-size: 32px; font-weight: 500;
+    letter-spacing: -0.02em; margin-bottom: 6px;
+  }
+  .spec-card p { font-size: 13px; color: var(--fg-muted); }
+
+  /* ============ GRID & SPACING ============ */
+  .grid-demo {
+    background: var(--bg-elev); border: 1px solid var(--border);
+    border-radius: var(--r-md); padding: 32px;
+    position: relative;
+  }
+  .grid-demo .cols {
+    display: grid; grid-template-columns: repeat(12, 1fr);
+    gap: 16px; height: 200px;
+  }
+  .grid-demo .cols > div {
+    background: rgba(124,92,255,0.08);
+    border: 1px dashed rgba(124,92,255,0.3);
+    border-radius: 4px;
+  }
+  .spacing-grid {
+    display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px;
+    margin-top: 16px;
+  }
+  .space-card {
+    background: var(--bg-elev); border: 1px solid var(--border);
+    border-radius: var(--r-md); padding: 20px;
+    display: flex; flex-direction: column; gap: 14px;
+  }
+  .space-card .box {
+    background: var(--primary-soft); border-radius: 4px;
+    border: 1px dashed rgba(124,92,255,0.4);
+  }
+  .space-card .meta {
+    font-family: var(--font-mono); font-size: 10px; color: var(--fg-muted);
+    text-transform: uppercase; letter-spacing: 0.06em;
+  }
+  .space-card .meta b { color: var(--fg); font-weight: 500; }
+
+  /* ============ APPLICATIONS ============ */
+  /* TICKET */
+  .ticket-stage {
+    background: var(--bg-elev);
+    border: 1px solid var(--border);
+    border-radius: var(--r-lg);
+    padding: 64px;
+    display: grid; place-items: center;
+    min-height: 440px;
+  }
+  .ticket {
+    width: 520px; height: 260px;
+    background: linear-gradient(135deg, #11111A 0%, #1C1C26 100%);
+    border: 1px solid var(--border-2);
+    border-radius: 18px;
+    display: grid; grid-template-columns: 1fr 120px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 24px 60px -20px rgba(124,92,255,0.3), 0 0 0 1px rgba(255,255,255,0.04);
+  }
+  .ticket::before {
+    content: ''; position: absolute;
+    left: calc(100% - 120px); top: -8px;
+    width: 16px; height: calc(100% + 16px);
+    background-image: radial-gradient(circle, var(--bg-elev) 3px, transparent 3.5px);
+    background-size: 16px 12px;
+    background-repeat: repeat-y;
+  }
+  .ticket::after {
+    content: ''; position: absolute;
+    top: 0; left: 0; right: 0; height: 4px;
+    background: linear-gradient(90deg, var(--primary), var(--accent));
+  }
+
+  .ticket .t-main { padding: 28px 28px 20px; display: flex; flex-direction: column; justify-content: space-between; }
+  .ticket .t-head {
+    display: flex; justify-content: space-between; align-items: start;
+  }
+  .ticket .t-logo {
+    font-family: var(--font-heading); font-weight: 600; font-size: 16px;
+    display: flex; align-items: center; gap: 8px;
+    letter-spacing: -0.02em;
+  }
+  .ticket .t-logo .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--primary); }
+  .ticket .t-evtype {
+    font-family: var(--font-mono); font-size: 10px; color: var(--fg-dim);
+    text-transform: uppercase; letter-spacing: 0.08em;
+  }
+  .ticket .t-title {
+    font-family: var(--font-heading); font-size: 28px; font-weight: 500;
+    letter-spacing: -0.025em; line-height: 1.05;
+  }
+  .ticket .t-sub {
+    font-size: 12px; color: var(--fg-muted); margin-top: 4px;
+  }
+  .ticket .t-meta {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+  }
+  .ticket .t-meta .k {
+    font-family: var(--font-mono); font-size: 9px; color: var(--fg-dim);
+    text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 3px;
+  }
+  .ticket .t-meta .v {
+    font-family: var(--font-heading); font-size: 13px; font-weight: 500;
+    letter-spacing: -0.01em;
+  }
+  .ticket .t-stub {
+    padding: 20px 12px;
+    display: flex; flex-direction: column; justify-content: space-between;
+    align-items: center;
+    border-left: 1px dashed var(--border-2);
+  }
+  .ticket .qr {
+    width: 78px; height: 78px;
+    background:
+      conic-gradient(from 0deg at 50% 50%, var(--fg) 0 25%, transparent 0 50%, var(--fg) 0 75%, transparent 0),
+      repeating-linear-gradient(90deg, var(--fg) 0 3px, transparent 3px 6px),
+      repeating-linear-gradient(0deg, var(--fg) 0 3px, transparent 3px 6px);
+    background-size: 100% 100%, 100% 100%, 100% 100%;
+    background-blend-mode: multiply;
+    border-radius: 6px;
+    padding: 6px;
+    background-color: var(--fg);
+    position: relative;
+  }
+  .ticket .qr::before {
+    content: ''; position: absolute; inset: 6px;
+    background-image:
+      linear-gradient(45deg, transparent 40%, var(--bg-elev) 40% 60%, transparent 60%),
+      repeating-conic-gradient(var(--bg-elev) 0% 25%, var(--fg) 0% 50%);
+    background-size: 100% 100%, 8px 8px;
+  }
+  .ticket .stub-id {
+    font-family: var(--font-mono); font-size: 9px; color: var(--fg-dim);
+    writing-mode: vertical-rl; transform: rotate(180deg);
+    letter-spacing: 0.1em;
+    position: absolute; right: 8px; top: 50%;
+    transform: translateY(-50%) rotate(180deg);
+    display: none;
+  }
+  .ticket .t-price {
+    font-family: var(--font-mono); font-size: 11px;
+    color: var(--fg-muted); text-align: center;
+  }
+  .ticket .t-price b { color: var(--accent); font-weight: 500; display: block; font-size: 14px; font-family: var(--font-heading); }
+
+  /* APP SCREENS */
+  .app-row {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;
+    margin-top: 16px;
+  }
+  .phone {
+    aspect-ratio: 9 / 19.5;
+    background: #06060B;
+    border: 1px solid var(--border-2);
+    border-radius: 32px;
+    padding: 10px;
+    box-shadow: 0 32px 60px -30px rgba(0,0,0,0.8);
+  }
+  .phone .screen {
+    width: 100%; height: 100%;
+    background: var(--bg);
+    border-radius: 24px;
+    overflow: hidden;
+    position: relative;
+    display: flex; flex-direction: column;
+  }
+  .phone .notch {
+    position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
+    width: 80px; height: 22px; background: #06060B;
+    border-radius: 12px; z-index: 10;
+  }
+  .phone .status {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 12px 24px 0;
+    font-family: var(--font-mono); font-size: 10px; color: var(--fg);
+    font-weight: 500;
+  }
+  .phone .content { flex: 1; padding: 40px 16px 16px; overflow: hidden; }
+  .phone .app-head {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 20px;
+  }
+  .phone .app-brand {
+    display: flex; align-items: center; gap: 6px;
+    font-family: var(--font-heading); font-size: 14px; font-weight: 600;
+    letter-spacing: -0.02em;
+  }
+  .phone .app-brand .d { width: 6px; height: 6px; border-radius: 50%; background: var(--primary); }
+  .phone .app-head .ic {
+    width: 28px; height: 28px; border-radius: 50%;
+    background: var(--bg-elev); display: grid; place-items: center;
+    color: var(--fg-muted); font-size: 12px;
+  }
+
+  /* Screen 1 — Home/Discover */
+  .phone .hero-event {
+    background: linear-gradient(160deg, rgba(124,92,255,0.4), rgba(0,229,184,0.2));
+    border-radius: 14px;
+    padding: 14px;
+    min-height: 180px;
+    display: flex; flex-direction: column; justify-content: space-between;
+    position: relative; overflow: hidden;
+    margin-bottom: 16px;
+    border: 1px solid rgba(255,255,255,0.08);
+  }
+  .phone .hero-event::before {
+    content: ''; position: absolute; inset: 0;
+    background:
+      radial-gradient(circle at 80% 20%, rgba(0,229,184,0.3), transparent 40%),
+      radial-gradient(circle at 20% 80%, rgba(124,92,255,0.4), transparent 50%);
+  }
+  .phone .hero-event .he-tag {
+    font-family: var(--font-mono); font-size: 9px;
+    padding: 3px 7px; background: rgba(255,255,255,0.15);
+    border-radius: 3px; width: fit-content;
+    text-transform: uppercase; letter-spacing: 0.06em;
+    position: relative;
+  }
+  .phone .hero-event .he-title {
+    font-family: var(--font-heading); font-size: 20px; font-weight: 500;
+    letter-spacing: -0.02em; line-height: 1.1; position: relative;
+  }
+  .phone .hero-event .he-sub {
+    font-size: 10px; color: var(--fg-muted); margin-top: 4px;
+    position: relative;
+  }
+  .phone .section-label {
+    font-family: var(--font-mono); font-size: 9px; color: var(--fg-dim);
+    text-transform: uppercase; letter-spacing: 0.08em;
+    margin-bottom: 10px;
+  }
+  .phone .evt-list { display: flex; flex-direction: column; gap: 8px; }
+  .phone .evt-row {
+    display: grid; grid-template-columns: 34px 1fr auto; gap: 10px; align-items: center;
+    padding: 8px; background: var(--bg-elev); border-radius: 8px;
+  }
+  .phone .evt-row .date-cube {
+    background: var(--primary-soft); border-radius: 6px;
+    aspect-ratio: 1; display: grid; place-items: center;
+    font-family: var(--font-heading); font-size: 10px; font-weight: 500;
+    color: var(--primary); line-height: 1; padding: 4px 2px;
+    text-align: center;
+  }
+  .phone .evt-row .date-cube b { font-size: 13px; display: block; }
+  .phone .evt-row .e-name { font-size: 11px; font-weight: 500; line-height: 1.2; }
+  .phone .evt-row .e-meta { font-size: 9px; color: var(--fg-dim); margin-top: 2px; }
+  .phone .evt-row .e-price {
+    font-family: var(--font-mono); font-size: 9px; color: var(--accent);
+  }
+  .phone .tabbar {
+    position: absolute; bottom: 16px; left: 16px; right: 16px;
+    background: var(--bg-elev-2); border: 1px solid var(--border);
+    border-radius: 999px; padding: 8px 12px;
+    display: flex; justify-content: space-around;
+    backdrop-filter: blur(10px);
+  }
+  .phone .tab-ic { color: var(--fg-dim); width: 18px; height: 18px; }
+  .phone .tab-ic.active { color: var(--primary); }
+
+  /* Screen 2 — Event details */
+  .phone .evt-cover {
+    height: 160px; border-radius: 14px;
+    background:
+      linear-gradient(180deg, transparent 50%, rgba(10,10,15,0.9)),
+      linear-gradient(135deg, #7C5CFF 0%, #00E5B8 100%);
+    margin-bottom: 16px;
+    padding: 10px;
+    display: flex; flex-direction: column; justify-content: space-between;
+    position: relative;
+  }
+  .phone .evt-cover::after {
+    content: '';
+    position: absolute; inset: 10px;
+    background:
+      repeating-linear-gradient(45deg, transparent 0 20px, rgba(255,255,255,0.04) 20px 22px);
+    border-radius: 10px;
+    pointer-events: none;
+  }
+  .phone .evt-cover .bk-tag {
+    width: fit-content; font-family: var(--font-mono); font-size: 9px;
+    padding: 4px 8px; background: rgba(0,0,0,0.3); border-radius: 999px;
+    backdrop-filter: blur(6px);
+  }
+  .phone .evt-title {
+    font-family: var(--font-heading); font-size: 22px; font-weight: 500;
+    letter-spacing: -0.025em; line-height: 1.05;
+    margin-bottom: 4px;
+  }
+  .phone .evt-meta-list {
+    display: flex; flex-direction: column; gap: 8px;
+    margin: 14px 0;
+  }
+  .phone .evt-meta-list .row {
+    display: flex; align-items: center; gap: 10px;
+    font-size: 11px; color: var(--fg-muted);
+  }
+  .phone .evt-meta-list .ic {
+    width: 24px; height: 24px; border-radius: 6px;
+    background: var(--bg-elev); display: grid; place-items: center;
+    color: var(--fg);
+  }
+  .phone .evt-meta-list .row b {
+    color: var(--fg); font-weight: 500; margin-right: 4px;
+  }
+  .phone .tier-card {
+    background: var(--bg-elev); border: 1px solid var(--border);
+    border-radius: 10px; padding: 10px;
+    margin-bottom: 6px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .phone .tier-card.selected {
+    border-color: var(--primary);
+    background: var(--primary-soft);
+  }
+  .phone .tier-card .t-name { font-size: 11px; font-weight: 500; }
+  .phone .tier-card .t-desc { font-size: 9px; color: var(--fg-muted); margin-top: 2px; }
+  .phone .tier-card .t-price {
+    font-family: var(--font-heading); font-size: 13px; font-weight: 500;
+  }
+  .phone .cta-bar {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    padding: 14px 16px 22px;
+    background: linear-gradient(to top, var(--bg) 60%, transparent);
+    display: flex; gap: 10px; align-items: center;
+  }
+  .phone .cta-btn {
+    flex: 1; background: var(--primary); color: #fff;
+    padding: 11px 14px; border-radius: 10px; text-align: center;
+    font-family: var(--font-heading); font-size: 13px; font-weight: 500;
+    letter-spacing: -0.01em;
+  }
+  .phone .cta-fav {
+    width: 40px; height: 40px; border-radius: 10px;
+    background: var(--bg-elev); border: 1px solid var(--border);
+    display: grid; place-items: center; color: var(--fg);
+  }
+
+  /* Screen 3 — My ticket */
+  .phone.dark-qr .screen { background: var(--primary); }
+  .phone.dark-qr .status { color: #fff; }
+  .phone.dark-qr .content { color: #fff; padding-top: 40px; }
+  .phone.dark-qr .app-brand { color: #fff; }
+  .phone.dark-qr .app-brand .d { background: #fff; }
+  .phone.dark-qr .app-head .ic { background: rgba(255,255,255,0.15); color: #fff; }
+  .phone .mticket {
+    background: #fff; color: #0A0A0F; border-radius: 16px;
+    padding: 18px 18px 14px; margin-top: 12px;
+    position: relative;
+  }
+  .phone .mticket .mt-head {
+    display: flex; justify-content: space-between;
+    font-family: var(--font-mono); font-size: 9px;
+    text-transform: uppercase; letter-spacing: 0.08em;
+    color: #666; margin-bottom: 12px;
+  }
+  .phone .mticket .mt-title {
+    font-family: var(--font-heading); font-size: 18px; font-weight: 500;
+    letter-spacing: -0.025em; line-height: 1.1; margin-bottom: 6px;
+  }
+  .phone .mticket .mt-sub { font-size: 10px; color: #666; }
+  .phone .mticket .mt-divider {
+    border-top: 1px dashed rgba(0,0,0,0.15);
+    margin: 14px -18px 14px;
+    position: relative;
+  }
+  .phone .mticket .mt-divider::before,
+  .phone .mticket .mt-divider::after {
+    content: ''; position: absolute;
+    width: 14px; height: 14px; border-radius: 50%;
+    background: var(--primary);
+    top: -7px;
+  }
+  .phone .mticket .mt-divider::before { left: -7px; }
+  .phone .mticket .mt-divider::after { right: -7px; }
+  .phone .mticket .qr-big {
+    width: 100%; aspect-ratio: 1;
+    background:
+      repeating-linear-gradient(90deg, #0A0A0F 0 4px, #fff 4px 8px),
+      repeating-linear-gradient(0deg, #0A0A0F 0 4px, transparent 4px 8px);
+    background-size: 8px 8px;
+    border-radius: 6px;
+    position: relative;
+    padding: 4px; background-color: #fff;
+  }
+  .phone .mticket .qr-big::before,
+  .phone .mticket .qr-big::after {
+    content: ''; position: absolute;
+    width: 22%; aspect-ratio: 1;
+    border: 4px solid #0A0A0F;
+    border-radius: 4px;
+    background: #fff;
+  }
+  .phone .mticket .qr-big::before { top: 8%; left: 8%; }
+  .phone .mticket .qr-big::after { top: 8%; right: 8%; }
+  .phone .mticket .mt-id {
+    font-family: var(--font-mono); font-size: 10px; color: #333;
+    text-align: center; margin-top: 12px;
+    letter-spacing: 0.12em;
+  }
+
+  /* DASHBOARD / SITE */
+  .dashboard {
+    background: var(--bg-elev);
+    border: 1px solid var(--border);
+    border-radius: var(--r-lg);
+    overflow: hidden;
+    margin-top: 16px;
+  }
+  .browser-bar {
+    background: var(--bg-elev-2);
+    padding: 12px 16px;
+    display: flex; align-items: center; gap: 10px;
+    border-bottom: 1px solid var(--border);
+  }
+  .browser-bar .dots { display: flex; gap: 6px; }
+  .browser-bar .dots span {
+    width: 11px; height: 11px; border-radius: 50%;
+    background: var(--border-2);
+  }
+  .browser-bar .url {
+    background: var(--bg); color: var(--fg-muted);
+    font-family: var(--font-mono); font-size: 11px;
+    padding: 6px 14px; border-radius: 6px;
+    flex: 1; margin-left: 12px; max-width: 360px;
+  }
+  .browser-bar .url b { color: var(--fg); }
+
+  .dash-body {
+    display: grid; grid-template-columns: 200px 1fr;
+    min-height: 520px;
+  }
+  .dash-sidebar {
+    padding: 20px 14px; border-right: 1px solid var(--border);
+    background: var(--bg-elev);
+  }
+  .dash-sidebar .ds-brand {
+    display: flex; align-items: center; gap: 8px;
+    font-family: var(--font-heading); font-weight: 600; font-size: 15px;
+    margin-bottom: 22px; padding: 0 6px;
+    letter-spacing: -0.02em;
+  }
+  .dash-sidebar .ds-brand .d { width: 7px; height: 7px; border-radius: 50%; background: var(--primary); }
+  .dash-sidebar .ds-label {
+    font-family: var(--font-mono); font-size: 9px; color: var(--fg-dim);
+    text-transform: uppercase; letter-spacing: 0.08em;
+    padding: 0 8px 6px; margin-top: 18px;
+  }
+  .dash-sidebar .ds-label:first-of-type { margin-top: 0; }
+  .dash-sidebar .ds-item {
+    display: flex; align-items: center; gap: 8px;
+    padding: 6px 8px; font-size: 12px; color: var(--fg-muted);
+    border-radius: 5px; margin-bottom: 2px;
+  }
+  .dash-sidebar .ds-item.active { background: var(--bg-elev-2); color: var(--fg); }
+  .dash-sidebar .ds-item .dot {
+    width: 5px; height: 5px; border-radius: 50%; background: var(--fg-dim);
+  }
+  .dash-sidebar .ds-item.active .dot { background: var(--primary); }
+
+  .dash-main { padding: 24px 28px; overflow: hidden; }
+  .dash-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+  .dash-title {
+    font-family: var(--font-heading); font-size: 22px; font-weight: 500;
+    letter-spacing: -0.025em;
+  }
+  .dash-title .sub {
+    display: block; font-family: var(--font-mono); font-size: 11px;
+    color: var(--fg-dim); font-weight: 400; margin-top: 2px;
+    letter-spacing: 0.04em; text-transform: uppercase;
+  }
+  .dash-btn {
+    background: var(--primary); color: #fff;
+    padding: 8px 14px; border-radius: 6px;
+    font-size: 12px; font-weight: 500;
+    display: flex; align-items: center; gap: 6px;
+  }
+
+  .kpi-row {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;
+    margin-bottom: 20px;
+  }
+  .kpi {
+    background: var(--bg-elev-2); border: 1px solid var(--border);
+    border-radius: 8px; padding: 14px;
+  }
+  .kpi .k-label {
+    font-family: var(--font-mono); font-size: 9px; color: var(--fg-dim);
+    text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px;
+  }
+  .kpi .k-value {
+    font-family: var(--font-heading); font-size: 22px; font-weight: 500;
+    letter-spacing: -0.02em;
+  }
+  .kpi .k-delta {
+    font-family: var(--font-mono); font-size: 10px; color: var(--accent);
+    margin-top: 2px;
+  }
+  .kpi .k-delta.down { color: var(--danger); }
+
+  .chart {
+    background: var(--bg-elev-2); border: 1px solid var(--border);
+    border-radius: 8px; padding: 18px; margin-bottom: 16px;
+    position: relative;
+  }
+  .chart .c-head {
+    display: flex; justify-content: space-between; margin-bottom: 12px;
+  }
+  .chart .c-head .c-title { font-size: 13px; font-weight: 500; }
+  .chart .c-head .c-tabs {
+    display: flex; gap: 4px; font-family: var(--font-mono);
+    font-size: 10px;
+  }
+  .chart .c-head .c-tabs span {
+    padding: 3px 8px; border-radius: 4px;
+    color: var(--fg-dim);
+  }
+  .chart .c-head .c-tabs span.active {
+    background: var(--bg-elev); color: var(--fg);
+  }
+  .chart svg { width: 100%; height: 140px; }
+
+  .table-events {
+    background: var(--bg-elev-2); border: 1px solid var(--border);
+    border-radius: 8px; overflow: hidden;
+  }
+  .te-head, .te-row {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr 80px;
+    padding: 10px 14px; gap: 10px;
+    font-size: 11px; align-items: center;
+  }
+  .te-head {
+    background: var(--bg-elev); font-family: var(--font-mono);
+    color: var(--fg-dim); text-transform: uppercase; letter-spacing: 0.06em;
+    font-size: 10px;
+  }
+  .te-row { border-top: 1px solid var(--border); }
+  .te-row .name { font-weight: 500; display: flex; align-items: center; gap: 8px; }
+  .te-row .name .d {
+    width: 6px; height: 6px; border-radius: 50%; background: var(--accent);
+  }
+  .te-row .name .d.live { background: var(--danger); animation: pulse 2s infinite; }
+  .te-row .name .d.draft { background: var(--fg-dim); }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+  .te-row .progress {
+    width: 100%; height: 4px; background: var(--bg);
+    border-radius: 2px; overflow: hidden; position: relative;
+  }
+  .te-row .progress::after {
+    content: ''; position: absolute; top: 0; left: 0; height: 100%;
+    background: var(--primary);
+    width: var(--pct, 50%);
+  }
+  .te-row .money { font-family: var(--font-mono); color: var(--accent); }
+  .te-row .date { font-family: var(--font-mono); color: var(--fg-muted); font-size: 10px; }
+
+  /* TOM DE VOZ */
+  .voice-grid {
+    display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px;
+  }
+  .voice-card {
+    background: var(--bg-elev); border: 1px solid var(--border);
+    border-radius: var(--r-md); padding: 28px;
+  }
+  .voice-card h4 {
+    font-family: var(--font-heading); font-size: 15px; font-weight: 500;
+    margin-bottom: 16px;
+    display: flex; align-items: center; gap: 10px;
+    letter-spacing: -0.01em;
+  }
+  .voice-card h4 .icon {
+    width: 22px; height: 22px; border-radius: 5px;
+    display: grid; place-items: center;
+    background: var(--primary-soft); color: var(--primary);
+    font-size: 12px;
+  }
+  .voice-card h4.bad .icon {
+    background: rgba(255,84,112,0.15); color: var(--danger);
+  }
+  .voice-card ul { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+  .voice-card li {
+    font-size: 14px; color: var(--fg-muted); line-height: 1.5;
+    padding-left: 16px; position: relative;
+  }
+  .voice-card li::before {
+    content: ''; position: absolute; left: 0; top: 9px;
+    width: 4px; height: 4px; border-radius: 50%; background: var(--fg-dim);
+  }
+  .voice-card li b { color: var(--fg); font-weight: 500; }
+
+  .voice-pairs {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 2px;
+    margin-top: 16px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    border-radius: var(--r-md);
+    overflow: hidden;
+  }
+  .vp-head, .vp-row { display: contents; }
+  .vp-cell {
+    background: var(--bg-elev); padding: 16px 20px;
+    font-size: 14px; line-height: 1.4;
+  }
+  .vp-cell.head {
+    font-family: var(--font-mono); font-size: 10px;
+    text-transform: uppercase; letter-spacing: 0.08em;
+    color: var(--fg-dim); background: var(--bg-elev-2);
+  }
+  .vp-cell.yes::before {
+    content: '✓'; color: var(--accent); margin-right: 8px;
+    font-weight: 600;
+  }
+  .vp-cell.no::before {
+    content: '✕'; color: var(--danger); margin-right: 8px;
+    font-weight: 600;
+  }
+  .vp-cell.no { color: var(--fg-muted); text-decoration: line-through; text-decoration-color: var(--fg-dim); }
+
+  /* MOTION */
+  .motion-stage {
+    background: var(--bg-elev); border: 1px solid var(--border);
+    border-radius: var(--r-lg); padding: 64px;
+    display: grid; place-items: center;
+    min-height: 300px;
+  }
+  .motion-logo {
+    display: flex; align-items: center; gap: 20px;
+    font-family: var(--font-heading); font-weight: 500;
+    font-size: 80px; letter-spacing: -0.045em;
+  }
+  .motion-logo .mark {
+    width: 64px; height: 64px; border-radius: 16px;
+    background: var(--primary);
+    position: relative; overflow: hidden;
+  }
+  .motion-logo .mark::before,
+  .motion-logo .mark::after {
+    content: ''; position: absolute; background: var(--bg);
+    border-radius: 2px;
+  }
+  .motion-logo .mark::before {
+    width: 26px; height: 3px; top: 22px; left: 18px;
+    animation: line-slide 3.5s ease-in-out infinite;
+  }
+  .motion-logo .mark::after {
+    width: 18px; height: 3px; top: 32px; left: 18px;
+    animation: line-slide 3.5s ease-in-out infinite 0.2s;
+  }
+  .motion-logo .mark .l3 {
+    position: absolute; background: var(--bg); border-radius: 2px;
+    width: 10px; height: 3px; top: 42px; left: 18px;
+    animation: line-slide 3.5s ease-in-out infinite 0.4s;
+  }
+  @keyframes line-slide {
+    0%, 60%, 100% { transform: translateX(0); opacity: 1; }
+    20% { transform: translateX(-40px); opacity: 0; }
+    40% { transform: translateX(40px); opacity: 0; }
+  }
+  .motion-logo .word {
+    display: inline-flex;
+  }
+  .motion-logo .word span {
+    display: inline-block;
+    animation: letter-pulse 3.5s ease-in-out infinite;
+  }
+  .motion-logo .word span:nth-child(1) { animation-delay: 0.0s; }
+  .motion-logo .word span:nth-child(2) { animation-delay: 0.05s; }
+  .motion-logo .word span:nth-child(3) { animation-delay: 0.1s; }
+  .motion-logo .word span:nth-child(4) { animation-delay: 0.15s; }
+  .motion-logo .word span:nth-child(5) { animation-delay: 0.2s; }
+  @keyframes letter-pulse {
+    0%, 60%, 100% { transform: translateY(0); opacity: 1; }
+    25% { transform: translateY(-8px); opacity: 0.3; }
+  }
+
+  .motion-sequence {
+    display: grid; grid-template-columns: repeat(5, 1fr); gap: 2px;
+    margin-top: 16px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    border-radius: var(--r-md); overflow: hidden;
+  }
+  .frame {
+    background: var(--bg-elev);
+    padding: 40px 16px 14px;
+    display: flex; flex-direction: column; align-items: center;
+    gap: 18px;
+    position: relative;
+  }
+  .frame .f-num {
+    position: absolute; top: 10px; left: 14px;
+    font-family: var(--font-mono); font-size: 10px; color: var(--fg-dim);
+  }
+  .frame .f-label {
+    font-family: var(--font-mono); font-size: 10px; color: var(--fg-muted);
+    text-transform: uppercase; letter-spacing: 0.06em;
+    text-align: center;
+  }
+  .frame .ff-mark {
+    width: 44px; height: 44px; border-radius: 11px;
+    background: var(--primary);
+    position: relative;
+  }
+
+  /* TWEAKS PANEL */
+  .tweaks-panel {
+    position: fixed; bottom: 24px; right: 24px;
+    width: 280px;
+    background: rgba(20,20,28,0.92);
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--border-2);
+    border-radius: var(--r-lg);
+    padding: 16px;
+    z-index: 100;
+    display: none;
+    box-shadow: 0 24px 60px -10px rgba(0,0,0,0.5);
+  }
+  .tweaks-panel.active { display: block; }
+  .tweaks-panel h3 {
+    font-family: var(--font-heading); font-size: 13px; font-weight: 500;
+    margin-bottom: 4px; letter-spacing: -0.01em;
+  }
+  .tweaks-panel .tp-sub {
+    font-family: var(--font-mono); font-size: 10px; color: var(--fg-dim);
+    text-transform: uppercase; letter-spacing: 0.06em;
+    margin-bottom: 14px;
+  }
+  .tp-group { margin-bottom: 14px; }
+  .tp-label {
+    font-family: var(--font-mono); font-size: 10px; color: var(--fg-muted);
+    text-transform: uppercase; letter-spacing: 0.06em;
+    margin-bottom: 6px;
+  }
+  .tp-colors {
+    display: flex; gap: 6px;
+  }
+  .tp-swatch {
+    width: 28px; height: 28px; border-radius: 6px;
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: transform 0.15s ease;
+  }
+  .tp-swatch.active { border-color: #fff; }
+  .tp-swatch:hover { transform: scale(1.06); }
+
+  .tp-select {
+    display: flex; gap: 4px; flex-wrap: wrap;
+  }
+  .tp-chip {
+    padding: 6px 10px; border-radius: 5px;
+    background: var(--bg-elev);
+    border: 1px solid var(--border);
+    font-size: 11px; cursor: pointer;
+    font-family: var(--font-body);
+    color: var(--fg-muted);
+  }
+  .tp-chip.active {
+    background: var(--primary); color: #fff; border-color: var(--primary);
+  }
+
+  /* FOOT */
+  .foot-block {
+    padding: 80px 0 0;
+    font-family: var(--font-mono); font-size: 12px; color: var(--fg-dim);
+    display: flex; justify-content: space-between;
+    border-top: 1px solid var(--border);
+    margin-top: 80px;
+  }
+  .foot-block .sig {
+    font-family: var(--font-heading); color: var(--fg-muted);
+    font-size: 13px;
+  }
+
+  /* Logo variant switcher - hides/shows */
+  [data-logo-variant="capsule"] .v-primary { display: flex; }
+  [data-logo-variant="capsule"] .v-ticket,
+  [data-logo-variant="capsule"] .v-mono { display: none; }
+  [data-logo-variant="ticket"] .v-ticket { display: flex; }
+  [data-logo-variant="ticket"] .v-primary,
+  [data-logo-variant="ticket"] .v-mono { display: none; }
+  [data-logo-variant="mono"] .v-mono { display: flex; }
+  [data-logo-variant="mono"] .v-primary,
+  [data-logo-variant="mono"] .v-ticket { display: none; }
+
+  /* default: show all 3 */
+
+  @media (max-width: 960px) {
+    body { grid-template-columns: 1fr; }
+    aside.sidenav { position: static; height: auto; }
+    main { padding: 0 24px 60px; }
+  }
+</style>
+</head>
+<body data-density="comfortable" data-logo-variant="all">
+
+<!-- ============== SIDEBAR ============== -->
+<aside class="sidenav">
+  <div class="brand-mini">
+    <span class="mark-glyph"></span>
+    <span>eevex</span>
+  </div>
+
+  <div class="nav-label">Marca</div>
+  <a class="nav-link active" href="#intro"><span class="num">00</span>Visão geral</a>
+  <a class="nav-link" href="#logo"><span class="num">01</span>Logo</a>
+  <a class="nav-link" href="#variacoes"><span class="num">02</span>Variações</a>
+  <a class="nav-link" href="#cores"><span class="num">03</span>Paleta</a>
+  <a class="nav-link" href="#tipografia"><span class="num">04</span>Tipografia</a>
+
+  <div class="nav-label">Sistema</div>
+  <a class="nav-link" href="#icones"><span class="num">05</span>Ícones</a>
+  <a class="nav-link" href="#grid"><span class="num">06</span>Grid & espaçamento</a>
+  <a class="nav-link" href="#motion"><span class="num">07</span>Motion</a>
+
+  <div class="nav-label">Aplicações</div>
+  <a class="nav-link" href="#ingresso"><span class="num">08</span>Ingresso</a>
+  <a class="nav-link" href="#app"><span class="num">09</span>App mobile</a>
+  <a class="nav-link" href="#site"><span class="num">10</span>Dashboard & site</a>
+
+  <div class="nav-label">Verbal</div>
+  <a class="nav-link" href="#voz"><span class="num">11</span>Tom de voz</a>
+
+  <div class="side-foot">
+    v1.0 · 2026<br/>
+    guia ao vivo
+  </div>
+</aside>
+
+<!-- ============== MAIN ============== -->
+<main>
+
+<!-- HERO -->
+<section class="hero" id="intro">
+  <div class="hero-meta">
+    <div><strong>Cliente</strong>eevex</div>
+    <div><strong>Categoria</strong>Eventos & ticketeira</div>
+    <div><strong>Ano</strong>2026</div>
+    <div><strong>Volume</strong>v1.0</div>
+  </div>
+
+  <h1>
+    Ingresso para <em>qualquer</em><br/>
+    evento, sem fricção.
+  </h1>
+
+  <p class="lede">
+    <span class="accent">eevex é uma plataforma de ticketing generalista</span> que trata cada ingresso
+    como um objeto digital de alta qualidade. Este é o sistema visual completo que sustenta
+    a marca em produto, comunicação e experiência.
+  </p>
+
+  <div class="hero-stamps">
+    <div class="stamp"><div class="k">Princípio</div><div class="v">Clareza antes de tudo</div></div>
+    <div class="stamp"><div class="k">Tom</div><div class="v">Tech, preciso, humano</div></div>
+    <div class="stamp"><div class="k">Base</div><div class="v">Dark-first, grid 8pt</div></div>
+    <div class="stamp"><div class="k">Entrega</div><div class="v">11 capítulos</div></div>
+  </div>
+</section>
+
+<!-- LOGO -->
+<section class="block" id="logo">
+  <div class="section-head">
+    <div class="section-num">01 / LOGO</div>
+    <div class="section-title">
+      <h2>Lockup primário</h2>
+      <p>Duas formas com mesmo peso óptico: a <b style="color:var(--fg)">cápsula</b> como símbolo conectado ao ingresso, e a <b style="color:var(--fg)">wordmark</b> em Space Grotesk Medium, com letras reduzidas a -4.5% de tracking para ganhar presença em telas densas.</p>
+    </div>
+  </div>
+
+  <div class="logo-stage">
+    <div class="stage-label">LOCKUP PRIMÁRIO · HORIZONTAL</div>
+    <div class="stage-label right">SAFE AREA = h/2</div>
+    <div class="logo-lockup-primary">
+      <div class="mark-capsule">
+        <span class="c-line l1"></span>
+        <span class="c-line l2"></span>
+        <span class="c-line l3"></span>
+      </div>
+      <div class="word">eevex</div>
+    </div>
+  </div>
+
+  <div class="logo-sizes">
+    <div class="size-item">
+      <div class="logo-lockup-primary" style="transform: scale(0.45); transform-origin: left bottom;">
+        <div class="mark-capsule"><span class="c-line l1"></span><span class="c-line l2"></span><span class="c-line l3"></span></div>
+        <div class="word">eevex</div>
+      </div>
+      <div class="lab" style="margin-top: 6px;">S · 24PX</div>
+    </div>
+    <div class="size-item">
+      <div class="logo-lockup-primary" style="transform: scale(0.7); transform-origin: left bottom;">
+        <div class="mark-capsule"><span class="c-line l1"></span><span class="c-line l2"></span><span class="c-line l3"></span></div>
+        <div class="word">eevex</div>
+      </div>
+      <div class="lab" style="margin-top: 6px;">M · 40PX</div>
+    </div>
+    <div class="size-item">
+      <div class="logo-lockup-primary">
+        <div class="mark-capsule"><span class="c-line l1"></span><span class="c-line l2"></span><span class="c-line l3"></span></div>
+        <div class="word">eevex</div>
+      </div>
+      <div class="lab" style="margin-top: 6px;">L · 80PX</div>
+    </div>
+  </div>
+</section>
+
+<!-- VARIAÇÕES -->
+<section class="block" id="variacoes">
+  <div class="section-head">
+    <div class="section-num">02 / VARIAÇÕES</div>
+    <div class="section-title">
+      <h2>Três direções de símbolo</h2>
+      <p>Exploramos três símbolos ancorados ao mesmo wordmark. Cada um carrega uma metáfora: a <b style="color:var(--fg)">cápsula com linhas</b> (leitura de lista, densidade), o <b style="color:var(--fg)">ticket-notch</b> (o ingresso literal) e o <b style="color:var(--fg)">monograma circular</b> (selo, identidade abstrata).</p>
+    </div>
+  </div>
+
+  <div class="logo-variants">
+    <div class="variant-card">
+      <div class="variant-slot">
+        <div class="logo-lockup-primary" style="gap: 16px;">
+          <div class="mark-capsule" style="width: 48px; height: 48px; border-radius: 12px;">
+            <span class="c-line l1" style="top: 17px; left: 13px;"></span>
+            <span class="c-line l2" style="top: 25px; left: 13px;"></span>
+            <span class="c-line l3" style="top: 33px; left: 13px;"></span>
+          </div>
+          <div class="word" style="font-size: 52px;">eevex</div>
+        </div>
+      </div>
+      <div class="v-meta">
+        <div class="name">Cápsula de linhas — A</div>
+        <div class="desc">primary · metáfora de lista</div>
+      </div>
+    </div>
+
+    <div class="variant-card">
+      <div class="variant-slot">
+        <div style="display:flex; align-items:center; gap:18px;">
+          <div class="mark-ticket">
+            <div class="barcode">
+              <span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+            </div>
+          </div>
+          <div class="word" style="font-family: var(--font-heading); font-weight: 500; font-size: 52px; letter-spacing: -0.045em; color: var(--fg);">eevex</div>
+        </div>
+      </div>
+      <div class="v-meta">
+        <div class="name">Ticket-notch — B</div>
+        <div class="desc">alternativo · metáfora literal</div>
+      </div>
+    </div>
+
+    <div class="variant-card">
+      <div class="variant-slot">
+        <div style="display:flex; align-items:center; gap:18px;">
+          <div class="mark-mono" style="width: 56px; height: 56px; border-width: 2.5px;"></div>
+          <div class="word" style="font-family: var(--font-heading); font-weight: 500; font-size: 52px; letter-spacing: -0.045em; color: var(--fg);">eevex</div>
+        </div>
+      </div>
+      <div class="v-meta">
+        <div class="name">Monograma circular — C</div>
+        <div class="desc">institucional · selo abstrato</div>
+      </div>
+    </div>
+
+    <!-- Second row: on backgrounds -->
+    <div class="variant-card light">
+      <div class="variant-slot">
+        <div class="logo-lockup-primary" style="gap: 16px;">
+          <div class="mark-capsule" style="width: 48px; height: 48px; border-radius: 12px; background: #1A1A22;">
+            <span class="c-line l1" style="top: 17px; left: 13px; background: #F0F0F5;"></span>
+            <span class="c-line l2" style="top: 25px; left: 13px; background: #F0F0F5;"></span>
+            <span class="c-line l3" style="top: 33px; left: 13px; background: #F0F0F5;"></span>
+          </div>
+          <div class="word" style="font-size: 52px; color: #1A1A22;">eevex</div>
+        </div>
+      </div>
+      <div class="v-meta">
+        <div class="name">Light mode</div>
+        <div class="desc">fundos claros · mono</div>
+      </div>
+    </div>
+
+    <div class="variant-card accent-bg">
+      <div class="variant-slot">
+        <div class="logo-lockup-primary" style="gap: 16px;">
+          <div class="mark-capsule" style="width: 48px; height: 48px; border-radius: 12px; background: rgba(10,10,15,1);">
+            <span class="c-line l1" style="top: 17px; left: 13px; background: #7C5CFF;"></span>
+            <span class="c-line l2" style="top: 25px; left: 13px; background: #7C5CFF;"></span>
+            <span class="c-line l3" style="top: 33px; left: 13px; background: #7C5CFF;"></span>
+          </div>
+          <div class="word" style="font-size: 52px; color: #0A0A0F;">eevex</div>
+        </div>
+      </div>
+      <div class="v-meta">
+        <div class="name">Sobre primária</div>
+        <div class="desc">alta energia · eventos</div>
+      </div>
+    </div>
+
+    <div class="variant-card">
+      <div class="variant-slot">
+        <div class="mark-capsule" style="width: 96px; height: 96px; border-radius: 24px;">
+          <span class="c-line l1" style="top: 33px; left: 25px; width: 44px; height: 4px;"></span>
+          <span class="c-line l2" style="top: 47px; left: 25px; width: 30px; height: 4px;"></span>
+          <span class="c-line l3" style="top: 61px; left: 25px; width: 18px; height: 4px;"></span>
+        </div>
+      </div>
+      <div class="v-meta">
+        <div class="name">Favicon · app icon</div>
+        <div class="desc">símbolo isolado · 1:1</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PALETA -->
+<section class="block" id="cores">
+  <div class="section-head">
+    <div class="section-num">03 / PALETA</div>
+    <div class="section-title">
+      <h2>Cores do sistema</h2>
+      <p>Base escura como padrão — é onde vive o produto. Violeta como cor da marca (confiança tech) e menta como cor de sucesso e sinal ao vivo. Contraste mínimo AA em todas as combinações tipográficas.</p>
+    </div>
+  </div>
+
+  <div class="palette-main">
+    <div class="swatch dark">
+      <div class="s-top">
+        <div class="s-name">Ink</div>
+        <div class="s-tag">base</div>
+      </div>
+      <div class="s-bot">
+        #0A0A0F<br/>
+        oklch(0.14 0.012 275)<br/>
+        RGB 10 10 15
+      </div>
+    </div>
+    <div class="swatch primary">
+      <div class="s-top">
+        <div class="s-name">Violet</div>
+        <div class="s-tag" style="background:rgba(255,255,255,0.2)">primary</div>
+      </div>
+      <div class="s-bot">
+        #7C5CFF<br/>
+        oklch(0.65 0.22 285)<br/>
+        RGB 124 92 255
+      </div>
+    </div>
+    <div class="swatch accent">
+      <div class="s-top">
+        <div class="s-name">Mint</div>
+        <div class="s-tag" style="background:rgba(10,10,15,0.15)">accent</div>
+      </div>
+      <div class="s-bot">
+        #00E5B8<br/>
+        oklch(0.83 0.17 170)<br/>
+        RGB 0 229 184
+      </div>
+    </div>
+    <div class="swatch light">
+      <div class="s-top">
+        <div class="s-name">Fog</div>
+        <div class="s-tag" style="background:rgba(10,10,15,0.1)">surface</div>
+      </div>
+      <div class="s-bot">
+        #F0F0F5<br/>
+        oklch(0.96 0.003 275)<br/>
+        RGB 240 240 245
+      </div>
+    </div>
+  </div>
+
+  <div class="palette-scale">
+    <div class="scale-label">VIOLET SCALE · 50 → 900</div>
+    <div class="scale-item" style="background:#F3EFFF; color:#0A0A0F;">50</div>
+    <div class="scale-item" style="background:#E2D8FF; color:#0A0A0F;">100</div>
+    <div class="scale-item" style="background:#C4B0FF; color:#0A0A0F;">200</div>
+    <div class="scale-item" style="background:#A589FF; color:#0A0A0F;">300</div>
+    <div class="scale-item" style="background:#8A6FFF; color:#F0F0F5;">400</div>
+    <div class="scale-item" style="background:#7C5CFF; color:#F0F0F5;">500</div>
+    <div class="scale-item" style="background:#6347DB; color:#F0F0F5;">600</div>
+    <div class="scale-item" style="background:#4A33AF; color:#F0F0F5;">700</div>
+    <div class="scale-item" style="background:#312383; color:#F0F0F5;">800</div>
+    <div class="scale-item" style="background:#1A1347; color:#F0F0F5;">900</div>
+  </div>
+
+  <div class="palette-scale">
+    <div class="scale-label">NEUTRAL SCALE · 50 → 900</div>
+    <div class="scale-item" style="background:#F0F0F5; color:#0A0A0F;">50</div>
+    <div class="scale-item" style="background:#DCDCE4; color:#0A0A0F;">100</div>
+    <div class="scale-item" style="background:#B8B8C4; color:#0A0A0F;">200</div>
+    <div class="scale-item" style="background:#9A9AA8; color:#0A0A0F;">300</div>
+    <div class="scale-item" style="background:#7A7A88; color:#F0F0F5;">400</div>
+    <div class="scale-item" style="background:#5A5A68; color:#F0F0F5;">500</div>
+    <div class="scale-item" style="background:#3C3C48; color:#F0F0F5;">600</div>
+    <div class="scale-item" style="background:#252530; color:#F0F0F5;">700</div>
+    <div class="scale-item" style="background:#16161F; color:#F0F0F5;">800</div>
+    <div class="scale-item" style="background:#0A0A0F; color:#F0F0F5;">900</div>
+  </div>
+
+  <div class="semantic-grid">
+    <div class="sem-card">
+      <div class="sem-dot" style="background: var(--accent);"></div>
+      <div class="sem-name">Success · Sucesso</div>
+      <div class="sem-desc">Evento confirmado, pagamento OK, check-in realizado</div>
+      <div class="sem-hex">#00E5B8 · mint</div>
+    </div>
+    <div class="sem-card">
+      <div class="sem-dot" style="background: #FFB547;"></div>
+      <div class="sem-name">Warning · Atenção</div>
+      <div class="sem-desc">Ingresso em reserva, prazo se esgotando</div>
+      <div class="sem-hex">#FFB547 · amber</div>
+    </div>
+    <div class="sem-card">
+      <div class="sem-dot" style="background: #FF5470;"></div>
+      <div class="sem-name">Danger · Erro</div>
+      <div class="sem-desc">Evento esgotado, falha no pagamento, expirado</div>
+      <div class="sem-hex">#FF5470 · coral</div>
+    </div>
+    <div class="sem-card">
+      <div class="sem-dot" style="background: var(--primary);"></div>
+      <div class="sem-name">Info · Marca</div>
+      <div class="sem-desc">Seleção, foco, links e elementos primários</div>
+      <div class="sem-hex">#7C5CFF · violet</div>
+    </div>
+  </div>
+</section>
+
+<!-- TIPOGRAFIA -->
+<section class="block" id="tipografia">
+  <div class="section-head">
+    <div class="section-num">04 / TIPOGRAFIA</div>
+    <div class="section-title">
+      <h2>Trio tipográfico</h2>
+      <p>Space Grotesk para títulos (geométrica, personalidade, caráter de tech consumer), Inter para texto e UI (legibilidade em qualquer tamanho) e JetBrains Mono para dados, IDs e etiquetas — qualquer coisa que pareça mais útil em mono.</p>
+    </div>
+  </div>
+
+  <div class="type-specimen">
+    <div class="meta">
+      <span>01 · DISPLAY & HEADINGS</span>
+      <span>Space Grotesk · 400 / 500 / 600</span>
+    </div>
+    <div class="big">Aa Bb Cc 01</div>
+    <div class="glyphs">A vinda do primeiro evento é sempre a mais importante.</div>
+  </div>
+
+  <div class="type-specimen body">
+    <div class="meta">
+      <span>02 · BODY & UI</span>
+      <span>Inter · 300 / 400 / 500 / 600</span>
+    </div>
+    <div class="big">Aa Bb Cc 01</div>
+    <div class="glyphs">A vinda do primeiro evento é sempre a mais importante.</div>
+  </div>
+
+  <div class="type-specimen mono">
+    <div class="meta">
+      <span>03 · CODE & DATA</span>
+      <span>JetBrains Mono · 400 / 500</span>
+    </div>
+    <div class="big">Aa Bb Cc 01</div>
+    <div class="glyphs">EVX-9A3F-KQT2 · R$ 120,00 · 19:00 BRT</div>
+  </div>
+
+  <div class="type-scale" style="margin-top: 16px;">
+    <div class="type-row">
+      <div class="tr-name">display/XL</div>
+      <div class="tr-sample" style="font-size: 56px; font-weight: 400; letter-spacing: -0.04em;">Ingresso sem fricção.</div>
+      <div class="tr-spec">56 / 58</div>
+      <div class="tr-spec">−4.0%</div>
+    </div>
+    <div class="type-row">
+      <div class="tr-name">h1</div>
+      <div class="tr-sample" style="font-size: 40px; font-weight: 500; letter-spacing: -0.025em;">Seu próximo evento.</div>
+      <div class="tr-spec">40 / 48</div>
+      <div class="tr-spec">−2.5%</div>
+    </div>
+    <div class="type-row">
+      <div class="tr-name">h2</div>
+      <div class="tr-sample" style="font-size: 28px; font-weight: 500; letter-spacing: -0.02em;">Todos os shows da semana</div>
+      <div class="tr-spec">28 / 34</div>
+      <div class="tr-spec">−2.0%</div>
+    </div>
+    <div class="type-row">
+      <div class="tr-name">h3</div>
+      <div class="tr-sample" style="font-size: 20px; font-weight: 500; letter-spacing: -0.015em;">Seus ingressos ativos</div>
+      <div class="tr-spec">20 / 26</div>
+      <div class="tr-spec">−1.5%</div>
+    </div>
+    <div class="type-row">
+      <div class="tr-name">body/L</div>
+      <div class="tr-sample" style="font-family: var(--font-body); font-size: 16px; font-weight: 400; color: var(--fg-muted);">Compre, organize e transfira ingressos sem fila, sem papel.</div>
+      <div class="tr-spec">16 / 24</div>
+      <div class="tr-spec">0</div>
+    </div>
+    <div class="type-row">
+      <div class="tr-name">body</div>
+      <div class="tr-sample" style="font-family: var(--font-body); font-size: 14px; font-weight: 400; color: var(--fg-muted);">Texto padrão da interface, documentos e cards.</div>
+      <div class="tr-spec">14 / 20</div>
+      <div class="tr-spec">0</div>
+    </div>
+    <div class="type-row">
+      <div class="tr-name">mono/s</div>
+      <div class="tr-sample" style="font-family: var(--font-mono); font-size: 12px; color: var(--fg-muted); letter-spacing: 0.01em;">EVX-9A3F-KQT2 · 2026.05.18</div>
+      <div class="tr-spec">12 / 18</div>
+      <div class="tr-spec">+1%</div>
+    </div>
+    <div class="type-row">
+      <div class="tr-name">label</div>
+      <div class="tr-sample" style="font-family: var(--font-mono); font-size: 10px; color: var(--fg-dim); text-transform: uppercase; letter-spacing: 0.08em;">PRODUTOR · SÃO PAULO</div>
+      <div class="tr-spec">10 / 14</div>
+      <div class="tr-spec">+8%</div>
+    </div>
+  </div>
+</section>
+
+<!-- ÍCONES -->
+<section class="block" id="icones">
+  <div class="section-head">
+    <div class="section-num">05 / ÍCONES</div>
+    <div class="section-title">
+      <h2>Sistema icônico</h2>
+      <p>Ícones construídos em grid de 24px, stroke de 1.5px, cantos arredondados a 2px. Geometria reduzida ao essencial — cada ícone é uma linha contínua onde possível. Dois pesos: regular e filled (estados ativos).</p>
+    </div>
+  </div>
+
+  <div class="icon-grid">
+    <div class="icon-cell primary">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 9a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v2a2 2 0 0 0 0 4v2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-2a2 2 0 0 0 0-4V9z"/>
+        <path d="M13 5v2M13 17v2M13 11v2"/>
+      </svg>
+      <div class="i-name">ticket</div>
+    </div>
+    <div class="icon-cell">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="5" width="18" height="16" rx="2"/>
+        <path d="M3 9h18M8 3v4M16 3v4"/>
+      </svg>
+      <div class="i-name">calendar</div>
+    </div>
+    <div class="icon-cell">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 22s8-7 8-13a8 8 0 0 0-16 0c0 6 8 13 8 13z"/>
+        <circle cx="12" cy="9" r="2.5"/>
+      </svg>
+      <div class="i-name">location</div>
+    </div>
+    <div class="icon-cell">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="9"/>
+        <path d="M12 7v5l3 2"/>
+      </svg>
+      <div class="i-name">time</div>
+    </div>
+    <div class="icon-cell accent">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="4" y="4" width="6" height="6" rx="1"/>
+        <rect x="14" y="4" width="6" height="6" rx="1"/>
+        <rect x="4" y="14" width="6" height="6" rx="1"/>
+        <path d="M14 14h2v2M20 14v2M14 20h2M18 20h2"/>
+      </svg>
+      <div class="i-name">qr</div>
+    </div>
+    <div class="icon-cell">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="8" r="4"/>
+        <path d="M4 21a8 8 0 0 1 16 0"/>
+      </svg>
+      <div class="i-name">user</div>
+    </div>
+
+    <div class="icon-cell">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="6" width="18" height="12" rx="2"/>
+        <path d="M3 10h18M7 15h3"/>
+      </svg>
+      <div class="i-name">payment</div>
+    </div>
+    <div class="icon-cell">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 12a9 9 0 1 0 9-9"/>
+        <path d="M3 3v4h4M12 7v5l3 2"/>
+      </svg>
+      <div class="i-name">refresh</div>
+    </div>
+    <div class="icon-cell">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="7"/>
+        <path d="m20 20-4-4"/>
+      </svg>
+      <div class="i-name">search</div>
+    </div>
+    <div class="icon-cell">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M5 9a7 7 0 0 1 14 0c0 5 2 6 2 6H3s2-1 2-6z"/>
+        <path d="M10 19a2 2 0 0 0 4 0"/>
+      </svg>
+      <div class="i-name">bell</div>
+    </div>
+    <div class="icon-cell">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M4 19V5a2 2 0 0 1 2-2h9l5 5v11a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/>
+        <path d="M14 3v5h5M8 13h8M8 17h5"/>
+      </svg>
+      <div class="i-name">invoice</div>
+    </div>
+    <div class="icon-cell">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 3v12M6 9l6-6 6 6"/>
+        <path d="M5 21h14"/>
+      </svg>
+      <div class="i-name">share</div>
+    </div>
+  </div>
+
+  <div class="icon-specs">
+    <div class="spec-card">
+      <h4>grid</h4>
+      <div class="big-num">24 × 24</div>
+      <p>padding interno de 2px, keyshape em 20×20.</p>
+    </div>
+    <div class="spec-card">
+      <h4>stroke</h4>
+      <div class="big-num">1.5 px</div>
+      <p>constante em qualquer tamanho, com linecaps arredondados.</p>
+    </div>
+    <div class="spec-card">
+      <h4>raio</h4>
+      <div class="big-num">2 px</div>
+      <p>cantos suaves mas não redondos — mantém o caráter geométrico.</p>
+    </div>
+  </div>
+</section>
+
+<!-- GRID -->
+<section class="block" id="grid">
+  <div class="section-head">
+    <div class="section-num">06 / GRID</div>
+    <div class="section-title">
+      <h2>Grid e espaçamento</h2>
+      <p>Sistema de 8 pontos. Toda medida de espaçamento, padding e gap é um múltiplo de 8 — com exceção de 4px para micro-detalhes tipográficos. Grid de 12 colunas para layouts web, 4 colunas para mobile.</p>
+    </div>
+  </div>
+
+  <div class="grid-demo">
+    <div class="cols">
+      <div></div><div></div><div></div><div></div><div></div><div></div>
+      <div></div><div></div><div></div><div></div><div></div><div></div>
+    </div>
+    <div style="position: absolute; top: 12px; right: 16px; font-family: var(--font-mono); font-size: 10px; color: var(--fg-dim); text-transform: uppercase; letter-spacing: 0.06em;">12 COL · 16 GUTTER · 1200 MAX</div>
+  </div>
+
+  <div class="spacing-grid">
+    <div class="space-card">
+      <div class="box" style="width: 4px; height: 4px;"></div>
+      <div class="meta"><b>4</b> px · xs</div>
+    </div>
+    <div class="space-card">
+      <div class="box" style="width: 8px; height: 8px;"></div>
+      <div class="meta"><b>8</b> px · sm</div>
+    </div>
+    <div class="space-card">
+      <div class="box" style="width: 16px; height: 16px;"></div>
+      <div class="meta"><b>16</b> px · md</div>
+    </div>
+    <div class="space-card">
+      <div class="box" style="width: 24px; height: 24px;"></div>
+      <div class="meta"><b>24</b> px · lg</div>
+    </div>
+    <div class="space-card">
+      <div class="box" style="width: 40px; height: 40px;"></div>
+      <div class="meta"><b>40</b> px · xl</div>
+    </div>
+    <div class="space-card">
+      <div class="box" style="width: 64px; height: 64px;"></div>
+      <div class="meta"><b>64</b> px · 2xl</div>
+    </div>
+  </div>
+
+  <div class="spec-card" style="margin-top: 16px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 32px;">
+    <div>
+      <h4>raio</h4>
+      <div class="big-num">6 / 10 / 16</div>
+      <p>small · medium · large</p>
+    </div>
+    <div>
+      <h4>elevação</h4>
+      <div class="big-num">3 níveis</div>
+      <p>flat · card · overlay</p>
+    </div>
+    <div>
+      <h4>breakpoints</h4>
+      <div class="big-num">sm 640 · md 960 · lg 1280</div>
+      <p>mobile-first</p>
+    </div>
+    <div>
+      <h4>densidade</h4>
+      <div class="big-num">3 modos</div>
+      <p>compact · comfortable · spacious</p>
+    </div>
+  </div>
+</section>
+
+<!-- MOTION -->
+<section class="block" id="motion">
+  <div class="section-head">
+    <div class="section-num">07 / MOTION</div>
+    <div class="section-title">
+      <h2>Logo em movimento</h2>
+      <p>As três linhas do símbolo deslizam como linhas de uma lista sendo rolada. Movimento discreto, contínuo — tempo total de 3.5s. Versão secundária: ondulação letra-a-letra no wordmark em pré-roll. Easing: <code style="font-family:var(--font-mono); color:var(--primary)">ease-in-out</code>, nunca linear.</p>
+    </div>
+  </div>
+
+  <div class="motion-stage">
+    <div class="motion-logo">
+      <div class="mark">
+        <span class="l3"></span>
+      </div>
+      <div class="word">
+        <span>e</span><span>e</span><span>v</span><span>e</span><span>x</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="motion-sequence">
+    <div class="frame">
+      <div class="f-num">01</div>
+      <div class="ff-mark" style="opacity: 0.25;"></div>
+      <div class="f-label">0.0s · estado inicial</div>
+    </div>
+    <div class="frame">
+      <div class="f-num">02</div>
+      <div class="ff-mark" style="position: relative;">
+        <span style="position:absolute; top:14px; left:10px; width:18px; height:2px; background:var(--bg); border-radius:1px; transform: translateX(-6px); opacity: 0.6;"></span>
+      </div>
+      <div class="f-label">0.7s · entry</div>
+    </div>
+    <div class="frame">
+      <div class="f-num">03</div>
+      <div class="ff-mark" style="position: relative;">
+        <span style="position:absolute; top:14px; left:10px; width:18px; height:2px; background:var(--bg); border-radius:1px;"></span>
+        <span style="position:absolute; top:20px; left:10px; width:12px; height:2px; background:var(--bg); border-radius:1px;"></span>
+      </div>
+      <div class="f-label">1.4s · sustain</div>
+    </div>
+    <div class="frame">
+      <div class="f-num">04</div>
+      <div class="ff-mark" style="position: relative;">
+        <span style="position:absolute; top:14px; left:10px; width:18px; height:2px; background:var(--bg); border-radius:1px; transform: translateX(8px); opacity: 0.4;"></span>
+        <span style="position:absolute; top:20px; left:10px; width:12px; height:2px; background:var(--bg); border-radius:1px;"></span>
+        <span style="position:absolute; top:26px; left:10px; width:7px; height:2px; background:var(--bg); border-radius:1px; opacity: 0.5;"></span>
+      </div>
+      <div class="f-label">2.1s · exit</div>
+    </div>
+    <div class="frame">
+      <div class="f-num">05</div>
+      <div class="ff-mark" style="opacity: 0.25;"></div>
+      <div class="f-label">3.5s · loop</div>
+    </div>
+  </div>
+</section>
+
+<!-- INGRESSO -->
+<section class="block" id="ingresso">
+  <div class="section-head">
+    <div class="section-num">08 / INGRESSO</div>
+    <div class="section-title">
+      <h2>O ingresso como objeto</h2>
+      <p>O ingresso eevex é um objeto digital autocontido: carrega marca, evento, dados do portador, QR e um ID curto legível. A tira superior multicolorida é a assinatura visual — muda por tipo de evento (música, corporativo, esportes).</p>
+    </div>
+  </div>
+
+  <div class="ticket-stage">
+    <div class="ticket">
+      <div class="t-main">
+        <div class="t-head">
+          <div class="t-logo"><span class="dot"></span> eevex</div>
+          <div class="t-evtype">SHOW · ARENA</div>
+        </div>
+        <div>
+          <div class="t-title">Noite de Estreia</div>
+          <div class="t-sub">Orquestra da Cidade · Temporada 2026</div>
+        </div>
+        <div class="t-meta">
+          <div>
+            <div class="k">DATA</div>
+            <div class="v">18 MAI</div>
+          </div>
+          <div>
+            <div class="k">HORA</div>
+            <div class="v">20:30</div>
+          </div>
+          <div>
+            <div class="k">SETOR</div>
+            <div class="v">PISTA A</div>
+          </div>
+          <div>
+            <div class="k">LUGAR</div>
+            <div class="v">B-14</div>
+          </div>
+        </div>
+      </div>
+      <div class="t-stub">
+        <div class="qr" aria-hidden="true"></div>
+        <div class="t-price">
+          <b>R$ 180</b>
+          EVX·9A3F
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- APP -->
+<section class="block" id="app">
+  <div class="section-head">
+    <div class="section-num">09 / APP</div>
+    <div class="section-title">
+      <h2>Aplicação mobile</h2>
+      <p>A experiência do consumidor vive no mobile. Três momentos-chave: descoberta (feed editorial-leve), seleção (detalhe do evento + tiers) e uso (ingresso ativo com QR em fundo violeta — fácil de achar na fila).</p>
+    </div>
+  </div>
+
+  <div class="app-row">
+
+    <!-- SCREEN 1 -->
+    <div class="phone">
+      <div class="screen">
+        <div class="notch"></div>
+        <div class="status"><span>9:41</span><span>●●● 5G</span></div>
+        <div class="content">
+          <div class="app-head">
+            <div class="app-brand"><span class="d"></span>eevex</div>
+            <div class="ic">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>
+            </div>
+          </div>
+          <div class="hero-event">
+            <div class="he-tag">EM ALTA</div>
+            <div>
+              <div class="he-title">Festival<br/>São Paulo</div>
+              <div class="he-sub">03 — 05 mai · Parque Municipal</div>
+            </div>
+          </div>
+          <div class="section-label">Próximos · São Paulo</div>
+          <div class="evt-list">
+            <div class="evt-row">
+              <div class="date-cube">MAI<b>18</b></div>
+              <div>
+                <div class="e-name">Noite de Estreia — Orquestra</div>
+                <div class="e-meta">Teatro Municipal · 20:30</div>
+              </div>
+              <div class="e-price">R$ 180</div>
+            </div>
+            <div class="evt-row">
+              <div class="date-cube">MAI<b>22</b></div>
+              <div>
+                <div class="e-name">TechConf Brasil 2026</div>
+                <div class="e-meta">Expo Center · 09:00</div>
+              </div>
+              <div class="e-price">R$ 450</div>
+            </div>
+            <div class="evt-row">
+              <div class="date-cube">JUN<b>02</b></div>
+              <div>
+                <div class="e-name">Clássico Regional</div>
+                <div class="e-meta">Arena · 16:00</div>
+              </div>
+              <div class="e-price">R$ 95</div>
+            </div>
+          </div>
+          <div class="tabbar">
+            <svg class="tab-ic active" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3 12l9-8 9 8v8a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1v-8z"/></svg>
+            <svg class="tab-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>
+            <svg class="tab-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v2a2 2 0 0 0 0 4v2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-2a2 2 0 0 0 0-4V9z"/></svg>
+            <svg class="tab-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCREEN 2 -->
+    <div class="phone">
+      <div class="screen">
+        <div class="notch"></div>
+        <div class="status"><span>9:41</span><span>●●● 5G</span></div>
+        <div class="content">
+          <div class="app-head">
+            <div class="ic">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15 6l-6 6 6 6"/></svg>
+            </div>
+            <div class="ic">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 3v12M6 9l6-6 6 6"/></svg>
+            </div>
+          </div>
+          <div class="evt-cover">
+            <div class="bk-tag">MÚSICA · CLÁSSICA</div>
+            <div>
+              <div class="he-title" style="position:relative; font-size:22px;">Noite de<br/>Estreia</div>
+            </div>
+          </div>
+          <div class="evt-title">Orquestra da Cidade</div>
+          <div style="font-size: 11px; color: var(--fg-muted); margin-bottom: 6px;">Temporada 2026 — Programa de abertura</div>
+          <div class="evt-meta-list">
+            <div class="row">
+              <div class="ic">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v4M16 3v4"/></svg>
+              </div>
+              <span><b>18 mai</b> · 20:30</span>
+            </div>
+            <div class="row">
+              <div class="ic">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M12 22s8-7 8-13a8 8 0 0 0-16 0c0 6 8 13 8 13z"/><circle cx="12" cy="9" r="2.5"/></svg>
+              </div>
+              <span><b>Teatro Municipal</b> · São Paulo</span>
+            </div>
+          </div>
+          <div class="section-label" style="margin-top: 8px;">Selecione seu setor</div>
+          <div class="tier-card">
+            <div>
+              <div class="t-name">Camarote</div>
+              <div class="t-desc">Visão privilegiada · 2 ingressos</div>
+            </div>
+            <div class="t-price">R$ 320</div>
+          </div>
+          <div class="tier-card selected">
+            <div>
+              <div class="t-name">Pista A</div>
+              <div class="t-desc">Central, 6 fileiras do palco</div>
+            </div>
+            <div class="t-price">R$ 180</div>
+          </div>
+          <div class="tier-card">
+            <div>
+              <div class="t-name">Plateia</div>
+              <div class="t-desc">Laterais · visão ampla</div>
+            </div>
+            <div class="t-price">R$ 90</div>
+          </div>
+          <div class="cta-bar">
+            <div class="cta-fav">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-8-4.5-8-11a5 5 0 0 1 9-3 5 5 0 0 1 9 3c0 6.5-8 11-8 11z"/></svg>
+            </div>
+            <div class="cta-btn">Comprar · R$ 180</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCREEN 3 -->
+    <div class="phone dark-qr">
+      <div class="screen">
+        <div class="notch"></div>
+        <div class="status"><span>9:41</span><span>●●● 5G</span></div>
+        <div class="content" style="padding-top: 40px;">
+          <div class="app-head">
+            <div class="app-brand"><span class="d"></span>eevex</div>
+            <div class="ic">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="6" r="1.5"/><circle cx="12" cy="18" r="1.5"/></svg>
+            </div>
+          </div>
+          <div style="font-family: var(--font-mono); font-size: 9px; opacity: 0.7; text-transform: uppercase; letter-spacing: 0.08em; margin-top: 14px;">SEU INGRESSO · APRESENTE NA ENTRADA</div>
+          <div class="mticket">
+            <div class="mt-head">
+              <span>EVX·9A3F·KQT2</span>
+              <span>PISTA A · B-14</span>
+            </div>
+            <div class="mt-title">Noite de Estreia</div>
+            <div class="mt-sub">Orquestra da Cidade · 18 mai · 20:30</div>
+            <div class="mt-divider"></div>
+            <div class="qr-big"></div>
+            <div class="mt-id">EVX · 9A3F · KQT2</div>
+          </div>
+          <div style="text-align: center; margin-top: 16px; font-size: 11px; opacity: 0.8;">
+            Transferir · Adicionar à carteira
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- DASHBOARD -->
+<section class="block" id="site">
+  <div class="section-head">
+    <div class="section-num">10 / DASHBOARD</div>
+    <div class="section-title">
+      <h2>Produtor · painel</h2>
+      <p>Lado B2B: o painel onde casas, produtoras e venues operam. Denso, orientado a dados, com KPIs e tabelas de eventos em tempo real. Mesma paleta, tipografia e densidade — só muda a proporção de informação por pixel.</p>
+    </div>
+  </div>
+
+  <div class="dashboard">
+    <div class="browser-bar">
+      <div class="dots"><span></span><span></span><span></span></div>
+      <div class="url">painel.eevex.com.br<b>/visao-geral</b></div>
+    </div>
+    <div class="dash-body">
+      <div class="dash-sidebar">
+        <div class="ds-brand"><span class="d"></span>eevex</div>
+        <div class="ds-label">Operação</div>
+        <div class="ds-item active"><span class="dot"></span>Visão geral</div>
+        <div class="ds-item"><span class="dot"></span>Eventos</div>
+        <div class="ds-item"><span class="dot"></span>Vendas</div>
+        <div class="ds-item"><span class="dot"></span>Check-in</div>
+        <div class="ds-label">Gestão</div>
+        <div class="ds-item"><span class="dot"></span>Financeiro</div>
+        <div class="ds-item"><span class="dot"></span>Clientes</div>
+        <div class="ds-item"><span class="dot"></span>Relatórios</div>
+        <div class="ds-label">Conta</div>
+        <div class="ds-item"><span class="dot"></span>Configurações</div>
+      </div>
+      <div class="dash-main">
+        <div class="dash-header">
+          <div class="dash-title">
+            Visão geral
+            <span class="sub">Últimos 30 dias · atualizado agora</span>
+          </div>
+          <div class="dash-btn">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+            Novo evento
+          </div>
+        </div>
+
+        <div class="kpi-row">
+          <div class="kpi">
+            <div class="k-label">Receita</div>
+            <div class="k-value">R$ 847K</div>
+            <div class="k-delta">↑ 18% vs mês ant.</div>
+          </div>
+          <div class="kpi">
+            <div class="k-label">Ingressos</div>
+            <div class="k-value">12.430</div>
+            <div class="k-delta">↑ 12%</div>
+          </div>
+          <div class="kpi">
+            <div class="k-label">Taxa de conversão</div>
+            <div class="k-value">7.2%</div>
+            <div class="k-delta down">↓ 0.4%</div>
+          </div>
+          <div class="kpi">
+            <div class="k-label">Check-in ao vivo</div>
+            <div class="k-value">1.248</div>
+            <div class="k-delta">● em 3 eventos</div>
+          </div>
+        </div>
+
+        <div class="chart">
+          <div class="c-head">
+            <div class="c-title">Vendas diárias</div>
+            <div class="c-tabs">
+              <span>7d</span><span class="active">30d</span><span>90d</span>
+            </div>
+          </div>
+          <svg viewBox="0 0 600 140" preserveAspectRatio="none">
+            <defs>
+              <linearGradient id="ga" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#7C5CFF" stop-opacity="0.4"/>
+                <stop offset="100%" stop-color="#7C5CFF" stop-opacity="0"/>
+              </linearGradient>
+            </defs>
+            <path d="M0 100 L30 90 L60 95 L90 80 L120 85 L150 70 L180 75 L210 60 L240 65 L270 50 L300 55 L330 40 L360 45 L390 35 L420 50 L450 30 L480 40 L510 25 L540 35 L570 20 L600 30 L600 140 L0 140 Z" fill="url(#ga)"/>
+            <path d="M0 100 L30 90 L60 95 L90 80 L120 85 L150 70 L180 75 L210 60 L240 65 L270 50 L300 55 L330 40 L360 45 L390 35 L420 50 L450 30 L480 40 L510 25 L540 35 L570 20 L600 30" fill="none" stroke="#7C5CFF" stroke-width="2"/>
+            <circle cx="570" cy="20" r="4" fill="#00E5B8"/>
+            <circle cx="570" cy="20" r="8" fill="#00E5B8" opacity="0.3"/>
+          </svg>
+        </div>
+
+        <div class="table-events">
+          <div class="te-head">
+            <div>Evento</div>
+            <div>Data</div>
+            <div>Vendas</div>
+            <div>Receita</div>
+            <div>Status</div>
+          </div>
+          <div class="te-row">
+            <div class="name"><span class="d live"></span>Noite de Estreia</div>
+            <div class="date">18.05 · 20:30</div>
+            <div><div class="progress" style="--pct: 87%"></div></div>
+            <div class="money">R$ 156K</div>
+            <div style="font-family: var(--font-mono); font-size: 10px; color: var(--danger);">AO VIVO</div>
+          </div>
+          <div class="te-row">
+            <div class="name"><span class="d"></span>TechConf Brasil 2026</div>
+            <div class="date">22.05 · 09:00</div>
+            <div><div class="progress" style="--pct: 64%"></div></div>
+            <div class="money">R$ 412K</div>
+            <div style="font-family: var(--font-mono); font-size: 10px; color: var(--accent);">ATIVO</div>
+          </div>
+          <div class="te-row">
+            <div class="name"><span class="d"></span>Clássico Regional</div>
+            <div class="date">02.06 · 16:00</div>
+            <div><div class="progress" style="--pct: 42%"></div></div>
+            <div class="money">R$ 198K</div>
+            <div style="font-family: var(--font-mono); font-size: 10px; color: var(--accent);">ATIVO</div>
+          </div>
+          <div class="te-row">
+            <div class="name"><span class="d draft"></span>Festival Inverno</div>
+            <div class="date">15.06 · 18:00</div>
+            <div><div class="progress" style="--pct: 8%"></div></div>
+            <div class="money">R$ 22K</div>
+            <div style="font-family: var(--font-mono); font-size: 10px; color: var(--fg-dim);">RASCUNHO</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TOM DE VOZ -->
+<section class="block" id="voz">
+  <div class="section-head">
+    <div class="section-num">11 / VOZ</div>
+    <div class="section-title">
+      <h2>Tom de voz</h2>
+      <p>Direto, sem pompa. A eevex fala como um amigo que entende de produto — te explica o necessário, não mais que isso. Nunca exagera, nunca se desculpa à toa, nunca grita.</p>
+    </div>
+  </div>
+
+  <div class="voice-grid">
+    <div class="voice-card">
+      <h4><span class="icon">✓</span>Somos</h4>
+      <ul>
+        <li><b>Diretos.</b> Frases curtas. Verbo no início. "Compre agora", não "Você pode comprar agora".</li>
+        <li><b>Precisos.</b> "18 mai, 20:30" e não "próxima sexta à noite". Datas e números sem ambiguidade.</li>
+        <li><b>Humanos.</b> Erramos? Dizemos. "Não conseguimos processar agora. Tente de novo em 1 min." — não "Ops!"</li>
+        <li><b>Minúsculos.</b> O nome é <em>eevex</em>, sempre. Em qualquer posição da frase.</li>
+      </ul>
+    </div>
+    <div class="voice-card">
+      <h4 class="bad"><span class="icon">✕</span>Não somos</h4>
+      <ul>
+        <li><b>Exagerados.</b> Nada de "A melhor experiência de eventos do universo!"</li>
+        <li><b>Fofinhos.</b> Sem emojis no produto. Sem "😊" em notificações.</li>
+        <li><b>Corporativos.</b> Sem "otimize sua jornada de engajamento". Isso não significa nada.</li>
+        <li><b>Vagos.</b> "Em breve" é fraco. "Quinta, 23 mai" é forte.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="voice-pairs">
+    <div class="vp-cell head">Evite</div>
+    <div class="vp-cell head">Prefira</div>
+
+    <div class="vp-cell no">Ops! Algo deu errado 😔 Tente novamente mais tarde.</div>
+    <div class="vp-cell yes">Pagamento não aprovado. Verifique o cartão e tente de novo.</div>
+
+    <div class="vp-cell no">Garanta já seu ingresso antes que acabe!!!</div>
+    <div class="vp-cell yes">Restam 23 ingressos para a Pista A.</div>
+
+    <div class="vp-cell no">Bem-vindo(a) à sua plataforma de eventos favorita!</div>
+    <div class="vp-cell yes">Oi. Procurando algo para essa semana?</div>
+
+    <div class="vp-cell no">Seu pedido está sendo processado...</div>
+    <div class="vp-cell yes">Processando pagamento. Isso leva até 30 segundos.</div>
+
+    <div class="vp-cell no">Você está a um passo da melhor noite da sua vida!</div>
+    <div class="vp-cell yes">Compra confirmada. O ingresso já está na sua carteira.</div>
+  </div>
+</section>
+
+<!-- FOOT -->
+<section class="foot-block">
+  <div>
+    eevex · sistema de marca v1.0<br/>
+    última atualização: 2026.04.20
+  </div>
+  <div class="sig">— fim do documento</div>
+</section>
+
+</main>
+
+<!-- ============== SIMPLIFIED TICKET-NOTCH OVERRIDE ============== -->
+<style>
+/* ============================================================
+   FINAL SYMBOL — SIMPLIFIED TICKET-NOTCH
+   Single geometric primitive: rounded rectangle + 2 side notches.
+   Scales from any size; no internal detail; easy to reproduce
+   in vector, embroidery, favicon, etc.
+   ============================================================ */
+
+/* Reset all previous mark implementations */
+.mark-glyph,
+.mark-capsule,
+.mark-ticket,
+.mark-mono,
+.ff-mark,
+.motion-logo .mark {
+  all: unset;
+  display: inline-block;
+  flex-shrink: 0;
+  position: relative;
+  background: var(--primary);
+  border-radius: 22%;
+  width: 28px; height: 20px;
+  -webkit-mask:
+    radial-gradient(circle at 0% 50%, transparent 11%, #000 12%),
+    radial-gradient(circle at 100% 50%, transparent 11%, #000 12%);
+  -webkit-mask-composite: source-in;
+          mask:
+    radial-gradient(circle at 0% 50%, transparent 11%, #000 12%),
+    radial-gradient(circle at 100% 50%, transparent 11%, #000 12%);
+          mask-composite: intersect;
+}
+/* Reset all inner pseudo elements and children */
+.mark-glyph::before, .mark-glyph::after,
+.mark-capsule::before, .mark-capsule::after,
+.mark-ticket::before, .mark-ticket::after,
+.mark-mono::before, .mark-mono::after,
+.ff-mark::before, .ff-mark::after,
+.motion-logo .mark::before,
+.motion-logo .mark::after { content: none !important; display: none !important; }
+
+.mark-capsule .c-line,
+.mark-ticket .barcode,
+.motion-logo .mark .l3 { display: none !important; }
+
+/* === SIZES by context === */
+/* Sidebar */
+aside.sidenav .mark-glyph { width: 28px; height: 20px; border-radius: 22%; }
+
+/* Main lockup — pair mark height to lowercase 'eevex' x-height */
+.logo-lockup-primary .mark-capsule { width: 76px; height: 54px; border-radius: 22%; }
+/* Size demo row — inherit transform from parent */
+.size-item .mark-capsule { width: 76px; height: 54px; border-radius: 22%; }
+
+/* Variations cards: only the ticket variant matters now — ensure uniform look */
+.variant-card .mark-capsule,
+.variant-card .mark-ticket,
+.variant-card .mark-mono { width: 58px; height: 42px; border-radius: 22%; }
+
+/* Favicon cell (big square) */
+.variant-card:last-child .mark-capsule { width: 96px; height: 68px; border-radius: 22%; }
+
+/* Light mode variant */
+.variant-card.light .mark-capsule { background: #1A1A22 !important; }
+/* Accent bg variant */
+.variant-card.accent-bg .mark-capsule { background: #0A0A0F !important; }
+
+/* Ingresso top bar — still gradient, keeps signature */
+/* Ticket digital inside ingresso section uses its own .ticket markup — left as is */
+
+/* App brand dot stays untouched (it's just a color dot, not the mark) */
+
+/* Motion */
+.motion-logo .mark { width: 88px; height: 62px; border-radius: 22%; }
+.motion-sequence .ff-mark { width: 52px; height: 36px; border-radius: 22%; }
+
+/* === Hide capsule & mono variants in the Variations grid,
+      promote ticket-notch as the single symbol.
+      Grid children (order in source):
+      1 capsule-dark  2 ticket-dark  3 mono-dark
+      4 capsule-light 5 accent-bg    6 favicon(capsule)
+      Keep: 2 (ticket), 5 (accent), 6 (favicon, re-rendered as notch) === */
+.logo-variants > .variant-card:nth-child(1),
+.logo-variants > .variant-card:nth-child(3),
+.logo-variants > .variant-card:nth-child(4) {
+  display: none !important;
+}
+
+/* Re-layout remaining 3 cards in a clean row */
+.logo-variants {
+  grid-template-columns: repeat(3, 1fr) !important;
+}
+
+/* Clean up inline pseudo lines of old mark-capsule inside cards (already reset via :unset) */
+.variant-card .logo-lockup-primary,
+.variant-card > .variant-slot > div { gap: 18px !important; }
+
+/* Motion sequence frames: progressive fade-in of the mark only */
+.motion-sequence .frame > span { display: none !important; }
+
+/* Frame 1: dim. Frame 2: 60%. Frame 3: full. Frame 4: 70% + shift. Frame 5: dim (loop) */
+.motion-sequence .frame:nth-child(1) .ff-mark { opacity: 0.25 !important; }
+.motion-sequence .frame:nth-child(2) .ff-mark { opacity: 0.6 !important; }
+.motion-sequence .frame:nth-child(3) .ff-mark { opacity: 1 !important; }
+.motion-sequence .frame:nth-child(4) .ff-mark { opacity: 0.7 !important; transform: translateX(4px); }
+.motion-sequence .frame:nth-child(5) .ff-mark { opacity: 0.25 !important; }
+
+/* Update motion animation: a subtle pulse on the notch mark */
+@keyframes evx-notch-pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(0.92); opacity: 0.75; }
+}
+.motion-logo .mark { animation: evx-notch-pulse 2.4s ease-in-out infinite !important; }
+
+/* Section 01 description adjust via content already generic enough — leave copy alone */
+</style>
+
+<!-- ============== TWEAKS PANEL ============== -->
+<div class="tweaks-panel" id="tweaks">
+  <h3>Tweaks</h3>
+  <div class="tp-sub">ajustes ao vivo</div>
+
+  <div class="tp-group">
+    <div class="tp-label">Cor primária</div>
+    <div class="tp-colors">
+      <div class="tp-swatch active" data-color="#7C5CFF" style="background: #7C5CFF;"></div>
+      <div class="tp-swatch" data-color="#FF5470" style="background: #FF5470;"></div>
+      <div class="tp-swatch" data-color="#FF8A3D" style="background: #FF8A3D;"></div>
+      <div class="tp-swatch" data-color="#00E5B8" style="background: #00E5B8;"></div>
+      <div class="tp-swatch" data-color="#3D8BFF" style="background: #3D8BFF;"></div>
+      <div class="tp-swatch" data-color="#F0F0F5" style="background: #F0F0F5;"></div>
+    </div>
+  </div>
+
+  <div class="tp-group">
+    <div class="tp-label">Tipografia display</div>
+    <div class="tp-select">
+      <div class="tp-chip active" data-font="Space Grotesk">Space Grotesk</div>
+      <div class="tp-chip" data-font="Inter">Inter</div>
+      <div class="tp-chip" data-font="General Sans">General Sans</div>
+      <div class="tp-chip" data-font="Instrument Serif">Instrument Serif</div>
+    </div>
+  </div>
+
+  <div class="tp-group">
+    <div class="tp-label">Densidade</div>
+    <div class="tp-select">
+      <div class="tp-chip" data-density="compact">Compact</div>
+      <div class="tp-chip active" data-density="comfortable">Comfortable</div>
+      <div class="tp-chip" data-density="spacious">Spacious</div>
+    </div>
+  </div>
+
+  <div class="tp-group">
+    <div class="tp-label">Logo variant ativo</div>
+    <div class="tp-select">
+      <div class="tp-chip active" data-logo="all">Todas (3)</div>
+      <div class="tp-chip" data-logo="capsule">Cápsula</div>
+      <div class="tp-chip" data-logo="ticket">Ticket</div>
+      <div class="tp-chip" data-logo="mono">Monograma</div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Navigation active state
+  const navLinks = document.querySelectorAll('aside a.nav-link');
+  const sections = [...document.querySelectorAll('main section[id]')];
+
+  function updateActive() {
+    const scrollPos = window.scrollY + 180;
+    let current = sections[0]?.id;
+    for (const s of sections) {
+      if (s.offsetTop <= scrollPos) current = s.id;
+    }
+    navLinks.forEach(a => {
+      a.classList.toggle('active', a.getAttribute('href') === '#' + current);
+    });
+  }
+  window.addEventListener('scroll', updateActive, { passive: true });
+  updateActive();
+
+  // ===== Tweak mode integration =====
+  const tweaksPanel = document.getElementById('tweaks');
+  let state = { ...TWEAK_DEFAULTS };
+
+  function applyState() {
+    document.documentElement.style.setProperty('--primary', state.primaryColor);
+    document.documentElement.style.setProperty('--primary-soft', state.primaryColor + '1f');
+    document.documentElement.style.setProperty('--font-heading', `'${state.fontHeading}', sans-serif`);
+    document.documentElement.style.setProperty('--font-body', `'${state.fontBody}', sans-serif`);
+    document.body.setAttribute('data-density', state.density);
+    document.body.setAttribute('data-logo-variant', state.logoVariant);
+
+    // update active UI in panel
+    document.querySelectorAll('.tp-swatch').forEach(el => {
+      el.classList.toggle('active', el.dataset.color === state.primaryColor);
+    });
+    document.querySelectorAll('.tp-chip[data-font]').forEach(el => {
+      el.classList.toggle('active', el.dataset.font === state.fontHeading);
+    });
+    document.querySelectorAll('.tp-chip[data-density]').forEach(el => {
+      el.classList.toggle('active', el.dataset.density === state.density);
+    });
+    document.querySelectorAll('.tp-chip[data-logo]').forEach(el => {
+      el.classList.toggle('active', el.dataset.logo === state.logoVariant);
+    });
+  }
+  applyState();
+
+  // Panel listeners
+  document.querySelectorAll('.tp-swatch').forEach(el => {
+    el.addEventListener('click', () => {
+      state.primaryColor = el.dataset.color;
+      applyState();
+      window.parent.postMessage({ type: '__edit_mode_set_keys', edits: { primaryColor: state.primaryColor } }, '*');
+    });
+  });
+  document.querySelectorAll('.tp-chip[data-font]').forEach(el => {
+    el.addEventListener('click', () => {
+      state.fontHeading = el.dataset.font;
+      applyState();
+      window.parent.postMessage({ type: '__edit_mode_set_keys', edits: { fontHeading: state.fontHeading } }, '*');
+    });
+  });
+  document.querySelectorAll('.tp-chip[data-density]').forEach(el => {
+    el.addEventListener('click', () => {
+      state.density = el.dataset.density;
+      applyState();
+      window.parent.postMessage({ type: '__edit_mode_set_keys', edits: { density: state.density } }, '*');
+    });
+  });
+  document.querySelectorAll('.tp-chip[data-logo]').forEach(el => {
+    el.addEventListener('click', () => {
+      state.logoVariant = el.dataset.logo;
+      applyState();
+      window.parent.postMessage({ type: '__edit_mode_set_keys', edits: { logoVariant: state.logoVariant } }, '*');
+    });
+  });
+
+  // Edit mode host hooks
+  window.addEventListener('message', (e) => {
+    if (!e.data || !e.data.type) return;
+    if (e.data.type === '__activate_edit_mode') tweaksPanel.classList.add('active');
+    if (e.data.type === '__deactivate_edit_mode') tweaksPanel.classList.remove('active');
+  });
+  window.parent.postMessage({ type: '__edit_mode_available' }, '*');
+</script>
+
+</body>
+</html>
