@@ -570,7 +570,7 @@ model StandOperator {
 model ProductPickupLog {
   id               String          @id @default(uuid())
   orderProductId   String
-  standOperatorId  String
+  standOperatorId  String?
   acceptanceToken  String          @unique
   tokenExpiresAt   DateTime
   status           PickupLogStatus @default(pending)
@@ -580,7 +580,7 @@ model ProductPickupLog {
   createdAt        DateTime        @default(now())
 
   orderProduct     OrderProduct    @relation(fields: [orderProductId], references: [id])
-  standOperator    StandOperator   @relation(fields: [standOperatorId], references: [id])
+  standOperator    StandOperator?  @relation(fields: [standOperatorId], references: [id])
 }
 
 // ─────────────────────────────────────────
