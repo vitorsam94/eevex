@@ -16,11 +16,16 @@ export const authOptions: NextAuthOptions = {
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) return null
-        const organizer = await db.organizer.findUnique({ where: { email: credentials.email } })
-        if (!organizer?.passwordHash) return null
-        const valid = await compare(credentials.password, organizer.passwordHash)
-        if (!valid) return null
-        return { id: organizer.id, name: organizer.name, email: organizer.email }
+        try {
+          const organizer = await db.organizer.findUnique({ where: { email: credentials.email } })
+          if (!organizer?.passwordHash) return null
+          const valid = await compare(credentials.password, organizer.passwordHash)
+          if (!valid) return null
+          return { id: organizer.id, name: organizer.name, email: organizer.email }
+        } catch (e) {
+          console.error('[auth] authorize error:', e)
+          return null
+        }
       },
     }),
   ],
