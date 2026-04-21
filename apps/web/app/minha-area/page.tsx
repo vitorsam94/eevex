@@ -19,7 +19,7 @@ async function getParticipantByToken(token: string) {
         orderBy: { createdAt: 'desc' },
         include: {
           event: true,
-          tickets: { include: { ticketType: true } },
+          orderTickets: { include: { ticketType: true } },
         },
       },
     },
@@ -96,7 +96,7 @@ export default async function MyAreaPage({ searchParams }: Props) {
                 </div>
 
                 <div className="space-y-3">
-                  {order.tickets.map((ticket) => (
+                  {order.orderTickets.map((ticket) => (
                     <div
                       key={ticket.id}
                       className="rounded-lg bg-bg-elev-2 border border-border p-4 space-y-3"

@@ -14,7 +14,7 @@ export default async function ConfirmationPage({ params }: Props) {
     include: {
       event: true,
       participant: true,
-      tickets: {
+      orderTickets: {
         include: { ticketType: true },
       },
     },
@@ -100,7 +100,7 @@ export default async function ConfirmationPage({ params }: Props) {
           </div>
 
           <div className="mt-4 pt-4 border-t border-border space-y-2">
-            {order.tickets.map((ticket) => (
+            {order.orderTickets.map((ticket) => (
               <div key={ticket.id} className="flex items-center justify-between text-sm">
                 <span className="text-fg-muted">{ticket.ticketType.name}</span>
                 <span className="font-mono text-xs text-fg-dim">{ticket.publicToken.slice(0, 8).toUpperCase()}</span>
@@ -113,7 +113,7 @@ export default async function ConfirmationPage({ params }: Props) {
         {isPaid && (
           <div className="space-y-3">
             <Button asChild variant="secondary" className="w-full" size="lg">
-              <Link href={`/api/tickets/${order.tickets[0]?.id}/pdf`} target="_blank">
+              <Link href={`/api/tickets/${order.orderTickets[0]?.id}/pdf`} target="_blank">
                 <Download className="h-4 w-4" />
                 Baixar ingresso em PDF
               </Link>
@@ -127,7 +127,7 @@ export default async function ConfirmationPage({ params }: Props) {
                 </a>
               </Button>
               <Button asChild variant="secondary">
-                <Link href={`/api/tickets/${order.tickets[0]?.id}/wallet/google`} target="_blank">
+                <Link href={`/api/tickets/${order.orderTickets[0]?.id}/wallet/google`} target="_blank">
                   <Wallet className="h-4 w-4" />
                   Wallet
                 </Link>
