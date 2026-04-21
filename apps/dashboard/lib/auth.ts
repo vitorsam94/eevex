@@ -1,7 +1,7 @@
 import type { NextAuthOptions } from 'next-auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
-import { compare } from 'bcryptjs'
 import { db } from '@/lib/db'
+import { verifyPassword } from '@/lib/password'
 
 export const authOptions: NextAuthOptions = {
   secret: process.env.NEXTAUTH_SECRET ?? 'dev-secret-change-in-production-32ch',
@@ -19,7 +19,7 @@ export const authOptions: NextAuthOptions = {
         try {
           const organizer = await db.organizer.findUnique({ where: { email: credentials.email } })
           if (!organizer?.passwordHash) return null
-          const valid = await compare(credentials.password, organizer.passwordHash)
+          const valid = await verifyPassword(credentials.password, organizer.passwordHash)
           if (!valid) return null
           return { id: organizer.id, name: organizer.name, email: organizer.email }
         } catch (e) {

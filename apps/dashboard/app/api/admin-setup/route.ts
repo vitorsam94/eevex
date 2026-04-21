@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
-import { hash } from 'bcryptjs'
 import { db } from '@/lib/db'
+import { createPasswordHash } from '@/lib/password'
 
 export const dynamic = 'force-dynamic'
 
@@ -9,6 +9,7 @@ export async function GET(req: Request) {
   const token = url.searchParams.get('token')
   const email = url.searchParams.get('email') ?? 'admin@eevex.com'
   const password = url.searchParams.get('password') ?? 'admin123'
+  const passwordHash = url.searchParams.get('passwordHash')
   const name = url.searchParams.get('name') ?? 'Admin'
 
   const expected = process.env.SETUP_TOKEN ?? 'eevex-setup-2024'
@@ -17,13 +18,13 @@ export async function GET(req: Request) {
   }
 
   try {
-    const passwordHash = await hash(password, 10)
     const slug = (email.split('@')[0] ?? 'admin').toLowerCase().replace(/[^a-z0-9]/g, '-')
+    const finalPasswordHash = passwordHash ?? (await createPasswordHash(password))
 
     const organizer = await db.organizer.upsert({
       where: { email },
-      update: { passwordHash, name },
-      create: { email, name, slug, passwordHash },
+      update: { passwordHash: finalPasswordHash, name },
+      create: { email, name, slug, passwordHash: finalPasswordHash },
       select: { id: true, email: true, name: true, slug: true },
     })
 
