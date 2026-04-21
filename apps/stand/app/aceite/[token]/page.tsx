@@ -12,7 +12,7 @@ export default async function AcceptancePage({ params }: Props) {
     include: {
       orderProduct: {
         include: {
-          sku: { include: { product: true } },
+          productSku: { include: { product: true } },
         },
       },
     },
@@ -43,8 +43,8 @@ export default async function AcceptancePage({ params }: Props) {
     )
   }
 
-  const product = log.orderProduct.sku.product
-  const attributes = log.orderProduct.sku.attributes as Record<string, string>
+  const product = log.orderProduct.productSku.product
+  const attributes = log.orderProduct.productSku.attributes as Record<string, string>
   const skuLabel = Object.entries(attributes)
     .map(([k, v]) => `${k}: ${v}`)
     .join(' · ')
