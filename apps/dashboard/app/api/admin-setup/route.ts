@@ -11,7 +11,7 @@ export async function GET(req: Request) {
   const password = url.searchParams.get('password') ?? 'admin123'
   const name = url.searchParams.get('name') ?? 'Admin'
 
-  const expected = process.env.NEXTAUTH_SECRET ?? 'dev-secret-change-in-production-32ch'
+  const expected = process.env.SETUP_TOKEN ?? 'eevex-setup-2024'
   if (!token || token !== expected) {
     return NextResponse.json({ error: 'unauthorized' }, { status: 401 })
   }
