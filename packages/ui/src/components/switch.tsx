@@ -1,12 +1,17 @@
 import * as React from 'react'
 import { cn } from '../lib/utils'
 
-export interface SwitchProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'type'> {
+export interface SwitchProps {
+  id?: string
   label?: string
+  className?: string
+  checked?: boolean
+  disabled?: boolean
+  onChange?: (event: React.ChangeEvent<HTMLInputElement>) => void
 }
 
 const Switch = React.forwardRef<HTMLInputElement, SwitchProps>(
-  ({ className, label, id, checked, onChange, ...props }, ref) => {
+  ({ className, label, id, checked, disabled, onChange }, ref) => {
     const inputId = id ?? label?.toLowerCase().replace(/\s+/g, '-')
     return (
       <div className="flex items-center gap-2">
@@ -14,6 +19,7 @@ const Switch = React.forwardRef<HTMLInputElement, SwitchProps>(
           type="button"
           role="switch"
           aria-checked={checked}
+          disabled={disabled}
           onClick={() => {
             const event = { target: { checked: !checked } } as React.ChangeEvent<HTMLInputElement>
             onChange?.(event)
@@ -40,7 +46,7 @@ const Switch = React.forwardRef<HTMLInputElement, SwitchProps>(
             {label}
           </label>
         )}
-        <input ref={ref} type="checkbox" id={inputId} className="sr-only" checked={checked} onChange={onChange} {...props} />
+        <input ref={ref} type="checkbox" id={inputId} className="sr-only" checked={checked} disabled={disabled} onChange={onChange} readOnly={!onChange} />
       </div>
     )
   },
