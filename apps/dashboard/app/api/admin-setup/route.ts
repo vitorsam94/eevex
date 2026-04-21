@@ -17,7 +17,7 @@ export async function GET(req: Request) {
   }
 
   const passwordHash = await hash(password, 10)
-  const slug = email.split('@')[0].toLowerCase().replace(/[^a-z0-9]/g, '-')
+  const slug = (email.split('@')[0] ?? 'admin').toLowerCase().replace(/[^a-z0-9]/g, '-')
 
   const organizer = await db.organizer.upsert({
     where: { email },
