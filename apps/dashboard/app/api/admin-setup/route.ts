@@ -16,15 +16,20 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: 'unauthorized' }, { status: 401 })
   }
 
-  const passwordHash = await hash(password, 10)
-  const slug = (email.split('@')[0] ?? 'admin').toLowerCase().replace(/[^a-z0-9]/g, '-')
+  try {
+    const passwordHash = await hash(password, 10)
+    const slug = (email.split('@')[0] ?? 'admin').toLowerCase().replace(/[^a-z0-9]/g, '-')
 
-  const organizer = await db.organizer.upsert({
-    where: { email },
-    update: { passwordHash, name },
-    create: { email, name, slug, passwordHash },
-    select: { id: true, email: true, name: true, slug: true },
-  })
+    const organizer = await db.organizer.upsert({
+      where: { email },
+      update: { passwordHash, name },
+      create: { email, name, slug, passwordHash },
+      select: { id: true, email: true, name: true, slug: true },
+    })
 
-  return NextResponse.json({ ok: true, organizer, passwordLength: password.length })
+    return NextResponse.json({ ok: true, organizer, passwordLength: password.length })
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e)
+    return NextResponse.json({ error: msg }, { status: 500 })
+  }
 }
