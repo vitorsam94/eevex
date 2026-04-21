@@ -26,7 +26,6 @@ const Switch = React.forwardRef<HTMLInputElement, SwitchProps>(
             checked ? 'bg-primary' : 'bg-bg-soft',
             className,
           )}
-          {...props}
         >
           <span
             className={cn(
