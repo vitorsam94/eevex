@@ -7,6 +7,10 @@ const nextConfig = {
       { protocol: 'https', hostname: '**.amazonaws.com' },
     ],
   },
+  webpack: (config) => {
+    config.resolve.symlinks = false
+    return config
+  },
 }
 
 module.exports = nextConfig
