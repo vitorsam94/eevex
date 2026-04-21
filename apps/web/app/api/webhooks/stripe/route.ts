@@ -62,7 +62,7 @@ async function handlePaymentSucceeded(pi: Stripe.PaymentIntent) {
 
   const order = await db.order.findUnique({
     where: { id: orderId },
-    include: { tickets: true },
+    include: { orderTickets: true },
   })
   if (!order || order.status === 'paid') return
 
@@ -82,7 +82,7 @@ async function handlePaymentSucceeded(pi: Stripe.PaymentIntent) {
       },
     })
 
-    for (const ticket of order.tickets) {
+    for (const ticket of order.orderTickets) {
       const sig = createHmac('sha256', secret).update(ticket.publicToken).digest('hex')
       await tx.orderTicket.update({
         where: { id: ticket.id },
