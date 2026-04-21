@@ -53,9 +53,11 @@ export function KioskScreen() {
         body: JSON.stringify({ token }),
       })
       const data = await res.json()
-      setState(data.status === 'success'
-        ? { phase: 'success', name: data.participant.name, ticketType: data.participant.ticketType }
-        : { phase: data.status as KioskState['phase'] })
+      if (data.status === 'success') {
+        setState({ phase: 'success', name: data.participant.name, ticketType: data.participant.ticketType })
+      } else {
+        setState({ phase: data.status as Exclude<KioskState, { phase: 'success' }>['phase'] } as KioskState)
+      }
     } catch {
       setState({ phase: 'invalid' })
     }
