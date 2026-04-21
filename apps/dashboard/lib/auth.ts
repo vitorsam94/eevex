@@ -4,7 +4,7 @@ import { compare } from 'bcryptjs'
 import { db } from '@eevex/db'
 
 export const authOptions: NextAuthOptions = {
-  secret: process.env.NEXTAUTH_SECRET,
+  secret: process.env.NEXTAUTH_SECRET ?? 'dev-secret-change-in-production-32ch',
   session: { strategy: 'jwt' },
   pages: { signIn: '/login' },
   providers: [
