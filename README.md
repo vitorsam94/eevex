@@ -72,3 +72,4 @@ npx prisma migrate deploy
 ```
 
 Você pode executar esse comando no Railway Shell após o primeiro deploy.
+# eevex
