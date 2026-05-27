@@ -71,5 +71,9 @@ Se quiser rodar manualmente no shell do Railway:
 npx prisma migrate deploy
 ```
 
+## Regra operacional deste projeto
+
+- Sempre realizar `git push` na `main` após concluir alterações, para manter o deploy automático do Railway atualizado.
+
 Você pode executar esse comando no Railway Shell após o primeiro deploy.
 # eevex
