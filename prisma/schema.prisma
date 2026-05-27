@@ -1,0 +1,62 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum EventStatus {
+  DRAFT
+  PUBLISHED
+  CLOSED
+}
+
+enum TicketStatus {
+  ISSUED
+  USED
+  VOID
+}
+
+model Event {
+  id          String      @id @default(cuid())
+  name        String
+  eventDate   DateTime
+  eventTime   String
+  openTime    String
+  address     String
+  priceBRL    Int         @default(0)
+  status      EventStatus @default(PUBLISHED)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  tickets     Ticket[]
+}
+
+model Ticket {
+  id           String       @id @default(cuid())
+  eventId      String
+  holderName   String
+  cpfEncrypted String
+  phoneEncrypted String?
+  cv           String
+  priceBRL     Int
+  secureToken  String       @unique
+  qrPayload    String
+  qrSignature  String
+  status       TicketStatus @default(ISSUED)
+  issuedAt     DateTime     @default(now())
+  usedAt       DateTime?
+  createdAt    DateTime     @default(now())
+
+  event Event @relation(fields: [eventId], references: [id], onDelete: Restrict)
+
+  @@index([eventId])
+}
+
+model OperatorUser {
+  id           String   @id @default(cuid())
+  username     String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+}

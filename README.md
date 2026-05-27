@@ -1,36 +1,74 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# eevex v1
 
-## Getting Started
+App simples para emissão segura de ingressos com Next.js + PostgreSQL.
 
-First, run the development server:
+## Recursos
+
+- Login de operador
+- Cadastro de eventos
+- Emissão de ingressos com CV, nome, CPF e telefone opcional
+- QR Code com payload assinado (HMAC-SHA256)
+- Impressão em formato A4 e térmica 80mm
+- API de validação de QR pronta para fase 2
+
+## Setup local
+
+1. Copie o ambiente:
+
+```bash
+cp .env.example .env
+```
+
+2. Suba banco local:
+
+```bash
+docker compose up -d db
+```
+
+3. Rode migração e seed de admin:
+
+```bash
+npx prisma migrate dev --name init
+```
+
+4. Rode o app:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Login padrão: `DEFAULT_ADMIN_USER` / `DEFAULT_ADMIN_PASSWORD`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Deploy no Railway via GitHub
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+1. Suba este repositório para o GitHub.
+2. No Railway, crie um projeto e um serviço Web apontando para este repo.
+3. No GitHub, configure os secrets do repositório:
 
-## Learn More
+- `RAILWAY_TOKEN`
+- `RAILWAY_SERVICE_ID`
+- `RAILWAY_ENVIRONMENT_ID`
 
-To learn more about Next.js, take a look at the following resources:
+4. O workflow [`deploy-railway.yml`](.github/workflows/deploy-railway.yml) fará deploy automático a cada push na `main`.
+5. No Railway, use o comando de start padrão do projeto (`npm start`).
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Variáveis de ambiente no Railway
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Defina no serviço Railway:
 
-## Deploy on Vercel
+- `DATABASE_URL` (Neon/Postgres)
+- `APP_SECRET` (string forte com 32+ chars)
+- `ENCRYPTION_KEY` (64 hex chars)
+- `DEFAULT_ADMIN_USER`
+- `DEFAULT_ADMIN_PASSWORD`
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Prisma em produção
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+O projeto já executa `prisma migrate deploy` automaticamente no `npm start`.
+Se quiser rodar manualmente no shell do Railway:
+
+```bash
+npx prisma migrate deploy
+```
+
+Você pode executar esse comando no Railway Shell após o primeiro deploy.
